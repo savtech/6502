@@ -24,7 +24,7 @@ setlocal ENABLEDELAYEDEXPANSION
     )
 
     set "exeName=nes.exe"
-    set "compilerFlags=-W4 -WX -nologo -std:c++20 -Zc:strictStrings -GR- -favor:INTEL64 -cgthreads8 -MP "
+    set "compilerFlags=-W4 -WX -nologo -std:c++20 -Zc:strictStrings -GR- -favor:INTEL64 -cgthreads8 -MP"
     set "ignoreWarnings=-wd4100 -wd4101 -wd4189 -wd4806"
     set "linkerFlags=-INCREMENTAL:NO"
 
