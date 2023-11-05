@@ -296,6 +296,6 @@ void load_instructions(CPU* cpu)
     cpu->instruction[TSX] = _tsx;
     cpu->instruction[TXA] = _txa;
     cpu->instruction[TXS] = _txs;
-    cpu->instruction[TAY] = _tya;
+    cpu->instruction[TYA] = _tya;
     cpu->instruction[INC_ZP] = _inc_zp;
 }

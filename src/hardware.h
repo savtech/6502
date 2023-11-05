@@ -33,6 +33,9 @@ struct Status
 struct CPU
 {
     static constexpr size_t MAX_INSTRUCTIONS = 256;
+    static constexpr size_t STACK_MIN_ADDRESS = 0x0100;
+    static constexpr size_t STACK_MAX_ADDRESS = 0x01FF;
+    
 
     u16 pc; //Program Counter
     u8 sp; //Stack Pointer
@@ -42,8 +45,9 @@ struct CPU
 
     void (*instruction[MAX_INSTRUCTIONS]) (CPU*, RAM*); //instruction table
 
-    void execute(RAM& ram, const size_t instruction_count = 1);
-    [[nodiscard]] u8& next_byte(RAM& ram);
+    void execute(RAM& ram);
+    void execute_instructions(RAM& ram, const size_t instruction_count = 1);
+    [[nodiscard]] u8 next_byte(RAM& ram);
 
     void reset();
     void a_op();
@@ -54,7 +58,12 @@ struct CPU
     void debug_print_instruction(const char* instruction_name, const u8 data = 0x00);
 };
 
-void CPU::execute(RAM& ram, const size_t instruction_count)
+void CPU::execute(RAM& ram)
+{
+    //TODO: implement executing without pre-set instructions
+}
+
+void CPU::execute_instructions(RAM& ram, const size_t instruction_count)
 {
     for(size_t i = 0; i < instruction_count; i++)
     {
@@ -63,7 +72,7 @@ void CPU::execute(RAM& ram, const size_t instruction_count)
     }
 }
 
-u8& CPU::next_byte(RAM& ram)
+u8 CPU::next_byte(RAM& ram)
 {
     return ram[pc++];
 }
@@ -112,25 +121,16 @@ void CPU::debug_print_instruction(const char* instruction_name, u8 data)
 {
     if(!debug) return;
 
-    static constexpr size_t BUFFER_SIZE = 64;
-    static constexpr size_t INSTRUCTION_PADDING = 10;
-    static constexpr size_t DATA_PADDING = 16;
-    static constexpr size_t REGISTER_PADDING = 50;
+    static constexpr size_t BUFFER_SIZE = 128;
+    static constexpr size_t INSTRUCTION_PADDING = 8;
 
-    char instruction_buffer[BUFFER_SIZE];
-    char data_buffer[32];
-    char register_buffer[BUFFER_SIZE];
-    char flags_buffer[BUFFER_SIZE];
-
-    snprintf(data_buffer, 32, "[%3i]", data);
+    static char instruction_buffer[BUFFER_SIZE];
+    static char register_buffer[BUFFER_SIZE];
+    static char flags_buffer[BUFFER_SIZE];
     
-    char register_data[BUFFER_SIZE];
-    snprintf(register_data, BUFFER_SIZE, "Registers: [A] %3i | [X] %3i | [Y] %3i", a, x, y);
-
-    snprintf(instruction_buffer, BUFFER_SIZE, "%-*s", (int)INSTRUCTION_PADDING, instruction_name);
-    snprintf(data_buffer, BUFFER_SIZE, "%-*s", (int)DATA_PADDING, data_buffer);
-    snprintf(register_buffer, BUFFER_SIZE, "%-*s", (int)REGISTER_PADDING, register_data);
-    snprintf(flags_buffer, BUFFER_SIZE, "Flags: [C] %i [Z] %i [I] %i [D] %i [B] %i [V] %i [N] %i", s.c, s.z, s.i, s.d, s.b, s.v, s.n);
+    snprintf(instruction_buffer, BUFFER_SIZE, "[%-*s] 0x%2.2x (%3i) ||||||||||", (int)INSTRUCTION_PADDING, instruction_name, data, data);
+    snprintf(register_buffer, BUFFER_SIZE, " REGISTERS: [PC] 0x%4.4x [SP] 0x%2.2x [A] 0x%2.2x (%3i) | [X] 0x%2.2x (%3i) | [Y] 0x%2.2x (%3i) ||||||||||||", pc, sp, a, a, x, x, y, y);
+    snprintf(flags_buffer, BUFFER_SIZE, " FLAGS: [C] %i [Z] %i [I] %i [D] %i [B] %i [V] %i [N] %i", s.c, s.z, s.i, s.d, s.b, s.v, s.n);
    
-    printf("%s%s%s%s\n", instruction_buffer, data_buffer, register_buffer, flags_buffer);
+    printf("%s%s%s\n", instruction_buffer, register_buffer, flags_buffer);
 }
