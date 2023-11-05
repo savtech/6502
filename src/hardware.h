@@ -1,7 +1,5 @@
 #pragma once
 #include <stdio.h>
-#include <string.h>
-#include "types.h"
 #include "utils.h"
 
 struct RAM
@@ -9,10 +7,17 @@ struct RAM
     static constexpr size_t MAX_MEMORY = KB(64);
 
     u8 memory[MAX_MEMORY];
+    u16 last_address_accessed = 0x00;
 
-    [[nodiscard]] u8& operator[](size_t index) { return memory[index]; }
-    void d_print() {printf("Ram memory available: %zu\n", sizeof(memory));};
+    [[nodiscard]] u8& operator[](const size_t index);
+    void debug_print() {printf("Ram memory available: %zu\n", sizeof(memory));};
 };
+
+u8& RAM::operator[](const size_t index)
+{
+    last_address_accessed = (u16)index;
+    return memory[index];
+}
 
 struct Status
 {
@@ -27,59 +32,105 @@ struct Status
 
 struct CPU
 {
+    static constexpr size_t MAX_INSTRUCTIONS = 256;
+
     u16 pc; //Program Counter
     u8 sp; //Stack Pointer
-    u8 a;
-    u8 x;
-    u8 y; //Registers
+    u8 a, x, y; //Registers
     Status s; //Status Register
+    bool debug = false;
 
-    void (*instruction[256]) (CPU*, RAM*); //instruction table
+    void (*instruction[MAX_INSTRUCTIONS]) (CPU*, RAM*); //instruction table
 
-    void execute(RAM& ram);
-    [[nodiscard]] u8 next_byte(RAM& ram);
-    [[nodiscard]] u8 read_byte(RAM& ram, u8 address);
+    void execute(RAM& ram, const size_t instruction_count = 1);
+    [[nodiscard]] u8& next_byte(RAM& ram);
 
-    void lda_op();
-    void ldx_op();
-    void ldy_op();
+    void reset();
+    void a_op();
+    void x_op();
+    void y_op();
+    void zp_op(RAM& ram, const u8& address);
 
-    void d_print_regs() { printf("CPU Registers: [A:%i][X:%i][Y:%i] ", a, x, y); }
-    void d_print_flags() { printf("CPU Flags: [C:%i][Z:%i][I:%i][D:%i][B:%i][V:%i][N:%i] ", s.c, s.z, s.i, s.d, s.b, s.v, s.n); }
-    void d_print() { d_print_flags(); d_print_regs(); printf("\n"); }
+    void debug_print_instruction(const char* instruction_name, const u8 data = 0x00);
 };
 
-void CPU::execute(RAM& ram)
+void CPU::execute(RAM& ram, const size_t instruction_count)
 {
-    u8 opcode = next_byte(ram);
-    instruction[opcode](this, &ram);
-    d_print();
+    for(size_t i = 0; i < instruction_count; i++)
+    {
+        u8 opcode = next_byte(ram);
+        instruction[opcode](this, &ram);
+    }
 }
 
-u8 CPU::next_byte(RAM& ram)
+u8& CPU::next_byte(RAM& ram)
 {
     return ram[pc++];
 }
 
-u8 CPU::read_byte(RAM& ram, u8 address)
+void CPU::reset()
 {
-    return ram[address];
+    pc = 0x0000;
+    sp = 0x00;
+    a = 0;
+    x = 0;
+    y = 0;
+    s.b = 0;
+    s.c = 0;
+    s.d = 0;
+    s.i = 0;
+    s.n = 0;
+    s.v = 0;
+    s.z = 0;
 }
 
-void CPU::lda_op()
+void CPU::a_op()
 {
     s.z = (a == 0);
     s.n = is_negative(a);
 }
 
-void CPU::ldx_op()
+void CPU::x_op()
 {
     s.z = (x == 0);
     s.n = is_negative(x);
 }
 
-void CPU::ldy_op()
+void CPU::y_op()
 {
     s.z = (y == 0);
     s.n = is_negative(y);
+}
+
+void CPU::zp_op(RAM& ram, const u8& address)
+{
+    s.z = (ram[address] == 0);
+    s.n = is_negative(ram[address]);
+}
+
+void CPU::debug_print_instruction(const char* instruction_name, u8 data)
+{
+    if(!debug) return;
+
+    static constexpr size_t BUFFER_SIZE = 64;
+    static constexpr size_t INSTRUCTION_PADDING = 10;
+    static constexpr size_t DATA_PADDING = 16;
+    static constexpr size_t REGISTER_PADDING = 50;
+
+    char instruction_buffer[BUFFER_SIZE];
+    char data_buffer[32];
+    char register_buffer[BUFFER_SIZE];
+    char flags_buffer[BUFFER_SIZE];
+
+    snprintf(data_buffer, 32, "[%3i]", data);
+    
+    char register_data[BUFFER_SIZE];
+    snprintf(register_data, BUFFER_SIZE, "Registers: [A] %3i | [X] %3i | [Y] %3i", a, x, y);
+
+    snprintf(instruction_buffer, BUFFER_SIZE, "%-*s", (int)INSTRUCTION_PADDING, instruction_name);
+    snprintf(data_buffer, BUFFER_SIZE, "%-*s", (int)DATA_PADDING, data_buffer);
+    snprintf(register_buffer, BUFFER_SIZE, "%-*s", (int)REGISTER_PADDING, register_data);
+    snprintf(flags_buffer, BUFFER_SIZE, "Flags: [C] %i [Z] %i [I] %i [D] %i [B] %i [V] %i [N] %i", s.c, s.z, s.i, s.d, s.b, s.v, s.n);
+   
+    printf("%s%s%s%s\n", instruction_buffer, data_buffer, register_buffer, flags_buffer);
 }
