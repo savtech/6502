@@ -1,22 +1,37 @@
 #pragma once
 #include <stdio.h>
+#include "types.h"
 #include "utils.h"
 
 struct RAM
 {
     static constexpr size_t MAX_MEMORY = KB(64);
 
-    u8 memory[MAX_MEMORY];
-    u16 last_address_accessed = 0x00;
+    u16 most_recent_read;
+    u16 most_recent_write;
 
-    [[nodiscard]] u8& operator[](const size_t index);
+	[[nodiscard]] u8 operator[](const size_t index) const { return memory[index]; } //Read from memory
+	[[nodiscard]] u8& operator[](const size_t index) { return memory[index]; }      //Write to memory
+
+    [[nodiscard]] const u8 read(const u16 address);
+    void write(const u16 address, const u8 data);
+
     void debug_print() {printf("Ram memory available: %zu\n", sizeof(memory));};
+
+    private:
+    u8 memory[MAX_MEMORY];
 };
 
-u8& RAM::operator[](const size_t index)
+const u8 RAM::read(const u16 address)
 {
-    last_address_accessed = (u16)index;
-    return memory[index];
+    most_recent_read = address;
+    return memory[address];
+}
+
+void RAM::write(const u16 address, const u8 data)
+{
+    most_recent_write = address;
+    memory[address] = data;
 }
 
 struct Status
@@ -43,10 +58,13 @@ struct CPU
     Status s; //Status Register
     bool debug = false;
 
-    void (*instruction[MAX_INSTRUCTIONS]) (CPU*, RAM*); //instruction table
+    void (*instruction[MAX_INSTRUCTIONS]) (CPU&, RAM&); //Instruction table
 
     void execute(RAM& ram);
     void execute_instructions(RAM& ram, const size_t instruction_count = 1);
+    [[nodiscard]] u8 read_byte(RAM& ram) const;
+    [[nodiscard]] u8 read_byte(RAM& ram, const u16 address) const;
+    void write_byte(RAM& ram, const u16 address, const u8 data);
     [[nodiscard]] u8 next_byte(RAM& ram);
 
     void reset();
@@ -55,26 +73,42 @@ struct CPU
     void y_op();
     void zp_op(RAM& ram, const u8& address);
 
-    void debug_print_instruction(const char* instruction_name, const u8 data = 0x00);
+    void debug_print_instruction(const char* instruction_name, const u8 data = 0x00) const;
 };
 
 void CPU::execute(RAM& ram)
 {
-    //TODO: implement executing without pre-set instructions
+    u8 opcode = read_byte(ram);
+    instruction[opcode](*this, ram);
+    pc++;
 }
 
 void CPU::execute_instructions(RAM& ram, const size_t instruction_count)
 {
     for(size_t i = 0; i < instruction_count; i++)
     {
-        u8 opcode = next_byte(ram);
-        instruction[opcode](this, &ram);
+        execute(ram);
     }
+}
+
+u8 CPU::read_byte(RAM& ram) const
+{
+    return ram.read(pc);
+}
+
+u8 CPU::read_byte(RAM& ram, const u16 address) const
+{
+    return ram.read(address);
+}
+
+void CPU::write_byte(RAM& ram, const u16 address, const u8 data)
+{
+    ram.write(address, data);
 }
 
 u8 CPU::next_byte(RAM& ram)
 {
-    return ram[pc++];
+    return ram.read(++pc);
 }
 
 void CPU::reset()
@@ -117,7 +151,7 @@ void CPU::zp_op(RAM& ram, const u8& address)
     s.n = is_negative(ram[address]);
 }
 
-void CPU::debug_print_instruction(const char* instruction_name, u8 data)
+void CPU::debug_print_instruction(const char* instruction_name, u8 data) const
 {
     if(!debug) return;
 
