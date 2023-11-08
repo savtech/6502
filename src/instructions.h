@@ -74,7 +74,7 @@ void _lda_imm(CPU& cpu, RAM& ram)
 {
     u8 value = cpu.next_byte(ram);
     cpu.a = value;
-    cpu.update_flags(value);
+    cpu.update_status(value);
 
     cpu.debug_print_instruction("LDA_IMM", value);
 }
@@ -84,7 +84,7 @@ void _lda_zp(CPU& cpu, RAM& ram)
     u8 address = cpu.next_byte(ram);
     u8 value = cpu.read_byte(ram, address);
     cpu.a = value;
-    cpu.update_flags(value);
+    cpu.update_status(value);
 
     cpu.debug_print_instruction("LDA_ZP", address);
 }
@@ -94,7 +94,7 @@ void _lda_zpx(CPU& cpu, RAM& ram)
     u8 address = cpu.next_byte(ram) + cpu.x;
     u8 value = cpu.read_byte(ram, address);
     cpu.a = value;
-    cpu.update_flags(value);
+    cpu.update_status(value);
 
     cpu.debug_print_instruction("LDA_ZPX", address);
 }
@@ -103,7 +103,7 @@ void _ldx_imm(CPU& cpu, RAM& ram)
 {
     u8 value = cpu.next_byte(ram);
     cpu.x = value;
-    cpu.update_flags(value);
+    cpu.update_status(value);
 
     cpu.debug_print_instruction("LDX_IMM", value);
 }
@@ -113,7 +113,7 @@ void _ldx_zp(CPU& cpu, RAM& ram)
     u8 address = cpu.next_byte(ram);
     u8 value = cpu.read_byte(ram, address);
     cpu.x = value;
-    cpu.update_flags(value);
+    cpu.update_status(value);
 
     cpu.debug_print_instruction("LDX_ZP", address);
 }
@@ -123,7 +123,7 @@ void _ldx_zpy(CPU& cpu, RAM& ram)
     u8 address = cpu.next_byte(ram) + cpu.y;
     u8 value = cpu.read_byte(ram, address);
     cpu.x = value;
-    cpu.update_flags(value);
+    cpu.update_status(value);
 
     cpu.debug_print_instruction("LDX_ZPY", address);    
 }
@@ -132,7 +132,7 @@ void _ldy_imm(CPU& cpu, RAM& ram)
 {
     u8 value = cpu.next_byte(ram);
     cpu.y = value;
-    cpu.update_flags(value);
+    cpu.update_status(value);
 
     cpu.debug_print_instruction("LDY_IMM", value);
 }
@@ -142,56 +142,56 @@ void _ldy_zp(CPU& cpu, RAM& ram)
     u8 address = cpu.next_byte(ram);
     u8 value = cpu.read_byte(ram, address);
     cpu.y = value;
-    cpu.update_flags(value);
+    cpu.update_status(value);
 
     cpu.debug_print_instruction("LDY_ZP", address);
 }
 
 void _sec(CPU& cpu, RAM& ram)
 {
-    cpu.s |= 0x01;
+    cpu.set_status(CPU::CARRY_FLAG);
 
     cpu.debug_print_instruction("SEC");
 }
 
 void _sed(CPU& cpu, RAM& ram)
 {
-    cpu.s |= 0x08;
+    cpu.set_status(CPU::DECIMAL_FLAG);
 
     cpu.debug_print_instruction("SED");
 }
 
 void _sei(CPU& cpu, RAM& ram)
 {
-    cpu.s |= 0x04;
+    cpu.set_status(CPU::INTERRUPT_FLAG);
 
     cpu.debug_print_instruction("SEI");
 }
 
 void _clc(CPU& cpu, RAM& ram)
 {
-    cpu.s &= ~CPU::CARRY_FLAG;
+    cpu.clear_status(CPU::CARRY_FLAG);
 
     cpu.debug_print_instruction("CLC");
 }
 
 void _cld(CPU& cpu, RAM& ram)
 {
-    cpu.s &= ~CPU::DECIMAL_FLAG;
+    cpu.clear_status(CPU::DECIMAL_FLAG);
 
     cpu.debug_print_instruction("CLD");
 }
 
 void _cli(CPU& cpu, RAM& ram)
 {
-    cpu.s &= ~CPU::INTERRUPT_FLAG;
+    cpu.clear_status(CPU::INTERRUPT_FLAG);
 
     cpu.debug_print_instruction("CLI");
 }
 
 void _clv(CPU& cpu, RAM& ram)
 {
-    cpu.s &= ~CPU::OVERFLOW_FLAG;
+    cpu.clear_status(CPU::OVERFLOW_FLAG);
     
     cpu.debug_print_instruction("CLV");
 }
@@ -223,7 +223,7 @@ void _sty_zp(CPU& cpu, RAM& ram)
 void _tax(CPU& cpu, RAM& ram)
 {
     cpu.x = cpu.a;
-    cpu.update_flags(cpu.x);
+    cpu.update_status(cpu.x);
 
     cpu.debug_print_instruction("TAX", cpu.a);
 }
@@ -231,7 +231,7 @@ void _tax(CPU& cpu, RAM& ram)
 void _tay(CPU& cpu, RAM& ram)
 {
     cpu.y = cpu.a;
-    cpu.update_flags(cpu.y);
+    cpu.update_status(cpu.y);
 
     cpu.debug_print_instruction("TAY", cpu.a);
 }
@@ -239,7 +239,7 @@ void _tay(CPU& cpu, RAM& ram)
 void _tsx(CPU& cpu, RAM& ram)
 {
     cpu.x = cpu.sp;
-    cpu.update_flags(cpu.x);
+    cpu.update_status(cpu.x);
 
     cpu.debug_print_instruction("TSX", cpu.sp);
 }
@@ -247,7 +247,7 @@ void _tsx(CPU& cpu, RAM& ram)
 void _txa(CPU& cpu, RAM& ram)
 {
     cpu.a = cpu.x;
-    cpu.update_flags(cpu.a);
+    cpu.update_status(cpu.a);
 
     cpu.debug_print_instruction("TXA", cpu.x);
 }
@@ -262,7 +262,7 @@ void _txs(CPU& cpu, RAM& ram)
 void _tya(CPU& cpu, RAM& ram)
 {
     cpu.a = cpu.y;
-    cpu.update_flags(cpu.a);
+    cpu.update_status(cpu.a);
 
     cpu.debug_print_instruction("TXA", cpu.y);
 }
@@ -272,7 +272,7 @@ void _inc_zp(CPU& cpu, RAM& ram)
     u8 address = cpu.next_byte(ram);
     u8 value = cpu.read_byte(ram, address);
     cpu.write_byte(ram, address, value + 1);
-    cpu.update_flags(value + 1);
+    cpu.update_status(value + 1);
 
     cpu.debug_print_instruction("INC_ZP", address);
 }
@@ -282,7 +282,7 @@ void _inc_zpx(CPU& cpu, RAM& ram)
     u8 address = cpu.next_byte(ram) + cpu.x;
     u8 value = cpu.read_byte(ram, address);
     cpu.write_byte(ram, address, value + 1);
-    cpu.update_flags(value + 1);
+    cpu.update_status(value + 1);
 
     cpu.debug_print_instruction("INC_ZPX", address);
 }
@@ -290,7 +290,7 @@ void _inc_zpx(CPU& cpu, RAM& ram)
 void _inx(CPU& cpu, RAM& ram)
 {
     cpu.x++;
-    cpu.update_flags(cpu.x);
+    cpu.update_status(cpu.x);
 
     cpu.debug_print_instruction("INX");
 }
@@ -298,7 +298,7 @@ void _inx(CPU& cpu, RAM& ram)
 void _iny(CPU& cpu, RAM& ram)
 {
     cpu.y++;
-    cpu.update_flags(cpu.y);
+    cpu.update_status(cpu.y);
 
     cpu.debug_print_instruction("INY");
 }

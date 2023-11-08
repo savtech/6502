@@ -65,7 +65,9 @@ struct CPU
     [[nodiscard]] u8 next_byte(RAM& ram);
 
     void reset();
-    void update_flags(u8 address);
+    void set_status(u8 flags);
+    void clear_status(u8 flags);
+    void update_status(u8 address);
 
     void debug_print_instruction(const char* instruction_name, const u8 data = 0x00) const;
 };
@@ -110,10 +112,20 @@ void CPU::reset()
     pc = sp = a = x = y = s = 0x00;
 }
 
-void CPU::update_flags(u8 address)
+void CPU::set_status(u8 flags)
 {
-    (address == 0x00) ? s |= ZERO_FLAG : s &= ~ZERO_FLAG;
-    (address & 0x80) ? s |= NEGATIVE_FLAG : s &= ~NEGATIVE_FLAG; //The most significant bit determines signage
+    s |= flags;
+}
+
+void CPU::clear_status(u8 flags)
+{
+    s &= ~flags;
+}
+
+void CPU::update_status(u8 address)
+{
+    (address == 0x00) ? set_status(ZERO_FLAG) : clear_status(ZERO_FLAG);
+    (address & 0x80) ? set_status(NEGATIVE_FLAG) : clear_status(NEGATIVE_FLAG); 
 }
 
 void CPU::debug_print_instruction(const char* instruction_name, u8 data) const
