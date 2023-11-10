@@ -1,5 +1,6 @@
 #include <stdio.h>
-#include "hardware.h"
+#include "cpu.h"
+#include "ram.h"
 #include "instructions.h"
 
 void mock_data(CPU& cpu, RAM& ram)

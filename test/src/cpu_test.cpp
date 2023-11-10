@@ -1,6 +1,7 @@
 #include "utest.h"
 #include "../../src/instructions.h"
-#include "../../src/hardware.h"
+#include "../../src/cpu.h"
+#include "../../src/ram.h"
 
 UTEST_MAIN();
 
@@ -66,6 +67,387 @@ UTEST_F(Instructions, NOP)
     utest_fixture->cpu.execute_instructions(utest_fixture->ram);
 
     ASSERT_EQ_MSG(0x0001, utest_fixture->cpu.pc, "The program counter should be incremented by 1.");
+}
+
+UTEST_F(Instructions, AND_Immediate_ZeroCase)
+{
+    static constexpr size_t instruction_count = 2;
+ 
+    utest_fixture->cpu.reset();
+
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x00);
+    utest_fixture->ram.write(0x0002, AND_IMM);
+    utest_fixture->ram.write(0x0003, 0xFF);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x00, utest_fixture->cpu.a, "The A register's value should be 0x00 (0).");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
+}
+
+UTEST_F(Instructions, AND_Immediate_PositiveCase)
+{
+    static constexpr size_t instruction_count = 2;
+    
+    utest_fixture->cpu.reset();
+
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x40);
+    utest_fixture->ram.write(0x0002, AND_IMM);
+    utest_fixture->ram.write(0x0003, 0xFF);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x40, utest_fixture->cpu.a, "The A register's value should be 0x40 (64).");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_Immediate_NegativeCase)
+{
+    static constexpr size_t instruction_count = 2;
+    
+    utest_fixture->cpu.reset();
+
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0xFF);
+    utest_fixture->ram.write(0x0002, AND_IMM);
+    utest_fixture->ram.write(0x0003, 0xFF);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0xFF, utest_fixture->cpu.a, "The A register's value should be 0xFF (255).");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_ZeroPage_ZeroCase)
+{
+    static constexpr size_t instruction_count = 2;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x00FF, 0xFF);
+    
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x00);
+    utest_fixture->ram.write(0x0002, AND_ZP);
+    utest_fixture->ram.write(0x0003, 0xFF);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x00, utest_fixture->cpu.a, "The A register's value should be 0x00 (0).");
+    ASSERT_EQ_MSG(0x00FF, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x00FF.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
+}
+
+UTEST_F(Instructions, AND_ZeroPage_PositiveCase)
+{
+    static constexpr size_t instruction_count = 2;
+    
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x00FF, 0xFF);
+
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x40);
+    utest_fixture->ram.write(0x0002, AND_ZP);
+    utest_fixture->ram.write(0x0003, 0xFF);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x40, utest_fixture->cpu.a, "The A register's value should be 0x40 (64).");
+    ASSERT_EQ_MSG(0x00FF, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x00FF.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_ZeroPage_NegativeCase)
+{
+    static constexpr size_t instruction_count = 2;
+    
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x00FF, 0xFF);
+
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0xFF);
+    utest_fixture->ram.write(0x0002, AND_ZP);
+    utest_fixture->ram.write(0x0003, 0xFF);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0xFF, utest_fixture->cpu.a, "The A register's value should be 0xFF (255).");
+    ASSERT_EQ_MSG(0x00FF, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x00FF.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_ZeroPageX_ZeroCase)
+{
+    static constexpr size_t instruction_count = 3;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x008F, 0xFF);
+
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x00);
+    utest_fixture->ram.write(0x0002, LDX_IMM);
+    utest_fixture->ram.write(0x0003, 0x0F);
+    utest_fixture->ram.write(0x0004, AND_ZPX);
+    utest_fixture->ram.write(0x0005, 0x80);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x00, utest_fixture->cpu.a, "The A register's value should be 0x00 (0).");
+    ASSERT_EQ_MSG(0x008F, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x008F.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
+}
+
+UTEST_F(Instructions, AND_ZeroPageX_PositiveCase)
+{
+    static constexpr size_t instruction_count = 3;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x008F, 0xFF);
+
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x40);
+    utest_fixture->ram.write(0x0002, LDX_IMM);
+    utest_fixture->ram.write(0x0003, 0x0F);
+    utest_fixture->ram.write(0x0004, AND_ZPX);
+    utest_fixture->ram.write(0x0005, 0x80);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x40, utest_fixture->cpu.a, "The A register's value should be 0x40 (64).");
+    ASSERT_EQ_MSG(0x008F, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x008F.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_ZeroPageX_NegativeCase)
+{
+    static constexpr size_t instruction_count = 3;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x008F, 0xFF);
+
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0xFF);
+    utest_fixture->ram.write(0x0002, LDX_IMM);
+    utest_fixture->ram.write(0x0003, 0x0F);
+    utest_fixture->ram.write(0x0004, AND_ZPX);
+    utest_fixture->ram.write(0x0005, 0x80);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0xFF, utest_fixture->cpu.a, "The A register's value should be 0xFF (255).");
+    ASSERT_EQ_MSG(0x008F, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x008F.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_Absolute_ZeroCase)
+{
+    static constexpr size_t instruction_count = 2;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0xAABB, 0xFF);
+    
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x00);
+    utest_fixture->ram.write(0x0002, AND_ABS);
+    utest_fixture->ram.write(0x0003, 0xBB);
+    utest_fixture->ram.write(0x0004, 0xAA);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x00, utest_fixture->cpu.a, "The A register's value should be 0x00 (0).");
+    ASSERT_EQ_MSG(0xAABB, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0xAABB.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
+}
+
+UTEST_F(Instructions, AND_Absolute_PositiveCase)
+{
+    static constexpr size_t instruction_count = 2;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0xAABB, 0xFF);
+    
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x40);
+    utest_fixture->ram.write(0x0002, AND_ABS);
+    utest_fixture->ram.write(0x0003, 0xBB);
+    utest_fixture->ram.write(0x0004, 0xAA);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x40, utest_fixture->cpu.a, "The A register's value should be 0x40 (64).");
+    ASSERT_EQ_MSG(0xAABB, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0xAABB.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_Absolute_NegativeCase)
+{
+    static constexpr size_t instruction_count = 2;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0xAABB, 0xFF);
+    
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0xFF);
+    utest_fixture->ram.write(0x0002, AND_ABS);
+    utest_fixture->ram.write(0x0003, 0xBB);
+    utest_fixture->ram.write(0x0004, 0xAA);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0xFF, utest_fixture->cpu.a, "The A register's value should be 0xFF (255).");
+    ASSERT_EQ_MSG(0xAABB, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0xAABB.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_AbsoluteX_ZeroCase)
+{
+    static constexpr size_t instruction_count = 3;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0xFF);
+    
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x00);
+    utest_fixture->ram.write(0x0002, LDX_IMM);
+    utest_fixture->ram.write(0x0003, 0x5C);
+    utest_fixture->ram.write(0x0004, AND_ABSX);
+    utest_fixture->ram.write(0x0005, 0xD0);
+    utest_fixture->ram.write(0x0006, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x00, utest_fixture->cpu.a, "The A register's value should be 0x00 (0).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x082C.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
+}
+
+UTEST_F(Instructions, AND_AbsoluteX_PositiveCase)
+{
+    static constexpr size_t instruction_count = 3;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0xFF);
+    
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x40);
+    utest_fixture->ram.write(0x0002, LDX_IMM);
+    utest_fixture->ram.write(0x0003, 0x5C);
+    utest_fixture->ram.write(0x0004, AND_ABSX);
+    utest_fixture->ram.write(0x0005, 0xD0);
+    utest_fixture->ram.write(0x0006, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x40, utest_fixture->cpu.a, "The A register's value should be 0x40 (64).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x082C.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_AbsoluteX_NegativeCase)
+{
+    static constexpr size_t instruction_count = 3;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0xFF);
+    
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0xFF);
+    utest_fixture->ram.write(0x0002, LDX_IMM);
+    utest_fixture->ram.write(0x0003, 0x5C);
+    utest_fixture->ram.write(0x0004, AND_ABSX);
+    utest_fixture->ram.write(0x0005, 0xD0);
+    utest_fixture->ram.write(0x0006, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0xFF, utest_fixture->cpu.a, "The A register's value should be 0xFF (255).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x082C.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_AbsoluteY_ZeroCase)
+{
+    static constexpr size_t instruction_count = 3;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0xFF);
+    
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x00);
+    utest_fixture->ram.write(0x0002, LDY_IMM);
+    utest_fixture->ram.write(0x0003, 0x5C);
+    utest_fixture->ram.write(0x0004, AND_ABSY);
+    utest_fixture->ram.write(0x0005, 0xD0);
+    utest_fixture->ram.write(0x0006, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x00, utest_fixture->cpu.a, "The A register's value should be 0x00 (0).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x082C.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
+}
+
+UTEST_F(Instructions, AND_AbsoluteY_PositiveCase)
+{
+    static constexpr size_t instruction_count = 3;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0xFF);
+    
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0x40);
+    utest_fixture->ram.write(0x0002, LDY_IMM);
+    utest_fixture->ram.write(0x0003, 0x5C);
+    utest_fixture->ram.write(0x0004, AND_ABSY);
+    utest_fixture->ram.write(0x0005, 0xD0);
+    utest_fixture->ram.write(0x0006, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x40, utest_fixture->cpu.a, "The A register's value should be 0x40 (64).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x082C.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, AND_AbsoluteY_NegativeCase)
+{
+    static constexpr size_t instruction_count = 3;
+ 
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0xFF);
+    
+    utest_fixture->ram.write(0x0000, LDA_IMM);
+    utest_fixture->ram.write(0x0001, 0xFF);
+    utest_fixture->ram.write(0x0002, LDY_IMM);
+    utest_fixture->ram.write(0x0003, 0x5C);
+    utest_fixture->ram.write(0x0004, AND_ABSY);
+    utest_fixture->ram.write(0x0005, 0xD0);
+    utest_fixture->ram.write(0x0006, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0xFF, utest_fixture->cpu.a, "The A register's value should be 0xFF (255).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_read, "The A register should have been compared to the zero page address 0x082C.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
 UTEST_F(Instructions, LDA_Immediate_ZeroCase)
@@ -359,8 +741,6 @@ UTEST_F(Instructions, LDA_AbsoluteY_ZeroCase)
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x082C, 0x00);
 
-    utest_fixture->cpu.debug = true;
-
     utest_fixture->ram.write(0x0000, LDY_IMM);
     utest_fixture->ram.write(0x0001, 0x5C);
     utest_fixture->ram.write(0x0002, LDA_ABSY);
@@ -368,8 +748,6 @@ UTEST_F(Instructions, LDA_AbsoluteY_ZeroCase)
     utest_fixture->ram.write(0x0004, 0x07);
 
     utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
-
-    printf("Most recent memory read: %4.4x\n", utest_fixture->ram.most_recent_read);
 
     ASSERT_EQ_MSG(0x00, utest_fixture->cpu.a, "The A register's value should be 0x00 (0).");
     ASSERT_EQ_MSG(utest_fixture->ram.most_recent_read, 0x082C, "The A register should have been populated from the address 0x082C.");

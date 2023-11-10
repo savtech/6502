@@ -1,35 +1,8 @@
 #pragma once
 #include <stdio.h>
+#include "ram.h"
 #include "types.h"
 #include "utils.h"
-
-struct RAM
-{
-    static constexpr size_t MAX_MEMORY = KB(64);
-
-    u16 most_recent_read;
-    u16 most_recent_write;
-
-    [[nodiscard]] const u8 read(const u16 address);
-    void write(const u16 address, const u8 data);
-
-    void debug_print() {printf("Ram memory available: %zu\n", sizeof(memory));};
-
-private:
-    u8 memory[MAX_MEMORY];
-};
-
-const u8 RAM::read(const u16 address)
-{
-    most_recent_read = address;
-    return memory[address];
-}
-
-void RAM::write(const u16 address, const u8 data)
-{
-    most_recent_write = address;
-    memory[address] = data;
-}
 
 struct CPU
 {
@@ -49,18 +22,16 @@ struct CPU
     u16 pc; //Program Counter
     u8 sp; //Stack Pointer
     u8 a, x, y, s; //Registers
-    bool debug = false;
-
     void (*instructions[MAX_INSTRUCTIONS]) (CPU&, RAM&); //Instruction table
+    bool debug = false;
 
     void execute(RAM& ram);
     void execute_instructions(RAM& ram, const size_t instruction_count = 1);
     [[nodiscard]] u8 read_u8(RAM& ram) const;
     [[nodiscard]] u8 read_u8(RAM& ram, const u16 address) const;
-    void write_byte(RAM& ram, const u16 address, const u8 data);
     [[nodiscard]] u8 next_u8(RAM& ram);
     [[nodiscard]] u16 next_u16(RAM& ram);
-
+    void write_byte(RAM& ram, const u16 address, const u8 data);
     void reset();
     void set_status(u8 flags);
     void clear_status(u8 flags);
@@ -94,11 +65,6 @@ u8 CPU::read_u8(RAM& ram, const u16 address) const
     return ram.read(address);
 }
 
-void CPU::write_byte(RAM& ram, const u16 address, const u8 data)
-{
-    ram.write(address, data);
-}
-
 u8 CPU::next_u8(RAM& ram)
 {
     return ram.read(++pc);
@@ -112,6 +78,11 @@ u16 CPU::next_u16(RAM& ram)
     return ((msb << 8) | lsb); //The 6502 is little endian
 }
 
+void CPU::write_byte(RAM& ram, const u16 address, const u8 data)
+{
+    ram.write(address, data);
+}
+
 void CPU::reset()
 {
     pc = sp = a = x = y = s = 0x00;
@@ -119,7 +90,7 @@ void CPU::reset()
 
 void CPU::set_status(u8 flags)
 {
-    s |= flags;
+   s |= flags;
 }
 
 void CPU::clear_status(u8 flags)
