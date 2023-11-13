@@ -1,40 +1,37 @@
-#include "utest.h"
-#include "../../src/instructions.h"
 #include "../../src/cpu.h"
+#include "../../src/instructions.h"
 #include "../../src/ram.h"
+#include "utest.h"
 
 UTEST_MAIN();
 
-struct HardwareFunctionality
-{
+struct HardwareFunctionality {
     CPU cpu;
     RAM ram;
 };
 
-UTEST_F_SETUP(HardwareFunctionality)
-{
+UTEST_F_SETUP(HardwareFunctionality) {
     load_instructions(utest_fixture->cpu);
     utest_fixture->cpu.debug = false;
 }
 
-UTEST_F_TEARDOWN(HardwareFunctionality) {}
+UTEST_F_TEARDOWN(HardwareFunctionality) {
+}
 
-struct Instructions
-{
+struct Instructions {
     CPU cpu;
     RAM ram;
 };
 
-UTEST_F_SETUP(Instructions)
-{
+UTEST_F_SETUP(Instructions) {
     load_instructions(utest_fixture->cpu);
     utest_fixture->cpu.debug = false;
 }
 
-UTEST_F_TEARDOWN(Instructions) {}
+UTEST_F_TEARDOWN(Instructions) {
+}
 
-UTEST_F(HardwareFunctionality, Read_U8)
-{
+UTEST_F(HardwareFunctionality, Read_U8) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, NOP);
@@ -45,8 +42,7 @@ UTEST_F(HardwareFunctionality, Read_U8)
     ASSERT_EQ_MSG(data, 0xFF, "The byte read should be 0xFF.");
 }
 
-UTEST_F(HardwareFunctionality, Read_U16)
-{
+UTEST_F(HardwareFunctionality, Read_U16) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, NOP);
@@ -58,8 +54,7 @@ UTEST_F(HardwareFunctionality, Read_U16)
     ASSERT_EQ_MSG(data, 0xFFFF, "The two bytes read from memory should equate to 0xFFFF as an u16.");
 }
 
-UTEST_F(Instructions, NOP)
-{
+UTEST_F(Instructions, NOP) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, NOP);
@@ -69,10 +64,9 @@ UTEST_F(Instructions, NOP)
     ASSERT_EQ_MSG(0x0001, utest_fixture->cpu.pc, "The program counter should be incremented by 1.");
 }
 
-UTEST_F(Instructions, AND_Immediate_ZeroCase)
-{
+UTEST_F(Instructions, AND_Immediate_ZeroCase) {
     static constexpr size_t instruction_count = 2;
- 
+
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDA_IMM);
@@ -87,10 +81,9 @@ UTEST_F(Instructions, AND_Immediate_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, AND_Immediate_PositiveCase)
-{
+UTEST_F(Instructions, AND_Immediate_PositiveCase) {
     static constexpr size_t instruction_count = 2;
-    
+
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDA_IMM);
@@ -105,10 +98,9 @@ UTEST_F(Instructions, AND_Immediate_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_Immediate_NegativeCase)
-{
+UTEST_F(Instructions, AND_Immediate_NegativeCase) {
     static constexpr size_t instruction_count = 2;
-    
+
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDA_IMM);
@@ -123,13 +115,12 @@ UTEST_F(Instructions, AND_Immediate_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_ZeroPage_ZeroCase)
-{
+UTEST_F(Instructions, AND_ZeroPage_ZeroCase) {
     static constexpr size_t instruction_count = 2;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0xFF);
-    
+
     utest_fixture->ram.write(0x0000, LDA_IMM);
     utest_fixture->ram.write(0x0001, 0x00);
     utest_fixture->ram.write(0x0002, AND_ZP);
@@ -143,10 +134,9 @@ UTEST_F(Instructions, AND_ZeroPage_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, AND_ZeroPage_PositiveCase)
-{
+UTEST_F(Instructions, AND_ZeroPage_PositiveCase) {
     static constexpr size_t instruction_count = 2;
-    
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0xFF);
 
@@ -163,10 +153,9 @@ UTEST_F(Instructions, AND_ZeroPage_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_ZeroPage_NegativeCase)
-{
+UTEST_F(Instructions, AND_ZeroPage_NegativeCase) {
     static constexpr size_t instruction_count = 2;
-    
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0xFF);
 
@@ -183,10 +172,9 @@ UTEST_F(Instructions, AND_ZeroPage_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_ZeroPageX_ZeroCase)
-{
+UTEST_F(Instructions, AND_ZeroPageX_ZeroCase) {
     static constexpr size_t instruction_count = 3;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x008F, 0xFF);
 
@@ -205,10 +193,9 @@ UTEST_F(Instructions, AND_ZeroPageX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, AND_ZeroPageX_PositiveCase)
-{
+UTEST_F(Instructions, AND_ZeroPageX_PositiveCase) {
     static constexpr size_t instruction_count = 3;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x008F, 0xFF);
 
@@ -227,10 +214,9 @@ UTEST_F(Instructions, AND_ZeroPageX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_ZeroPageX_NegativeCase)
-{
+UTEST_F(Instructions, AND_ZeroPageX_NegativeCase) {
     static constexpr size_t instruction_count = 3;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x008F, 0xFF);
 
@@ -249,13 +235,12 @@ UTEST_F(Instructions, AND_ZeroPageX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_Absolute_ZeroCase)
-{
+UTEST_F(Instructions, AND_Absolute_ZeroCase) {
     static constexpr size_t instruction_count = 2;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0xFF);
-    
+
     utest_fixture->ram.write(0x0000, LDA_IMM);
     utest_fixture->ram.write(0x0001, 0x00);
     utest_fixture->ram.write(0x0002, AND_ABS);
@@ -270,13 +255,12 @@ UTEST_F(Instructions, AND_Absolute_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, AND_Absolute_PositiveCase)
-{
+UTEST_F(Instructions, AND_Absolute_PositiveCase) {
     static constexpr size_t instruction_count = 2;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0xFF);
-    
+
     utest_fixture->ram.write(0x0000, LDA_IMM);
     utest_fixture->ram.write(0x0001, 0x40);
     utest_fixture->ram.write(0x0002, AND_ABS);
@@ -291,13 +275,12 @@ UTEST_F(Instructions, AND_Absolute_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_Absolute_NegativeCase)
-{
+UTEST_F(Instructions, AND_Absolute_NegativeCase) {
     static constexpr size_t instruction_count = 2;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0xFF);
-    
+
     utest_fixture->ram.write(0x0000, LDA_IMM);
     utest_fixture->ram.write(0x0001, 0xFF);
     utest_fixture->ram.write(0x0002, AND_ABS);
@@ -312,13 +295,12 @@ UTEST_F(Instructions, AND_Absolute_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_AbsoluteX_ZeroCase)
-{
+UTEST_F(Instructions, AND_AbsoluteX_ZeroCase) {
     static constexpr size_t instruction_count = 3;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x082C, 0xFF);
-    
+
     utest_fixture->ram.write(0x0000, LDA_IMM);
     utest_fixture->ram.write(0x0001, 0x00);
     utest_fixture->ram.write(0x0002, LDX_IMM);
@@ -335,13 +317,12 @@ UTEST_F(Instructions, AND_AbsoluteX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, AND_AbsoluteX_PositiveCase)
-{
+UTEST_F(Instructions, AND_AbsoluteX_PositiveCase) {
     static constexpr size_t instruction_count = 3;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x082C, 0xFF);
-    
+
     utest_fixture->ram.write(0x0000, LDA_IMM);
     utest_fixture->ram.write(0x0001, 0x40);
     utest_fixture->ram.write(0x0002, LDX_IMM);
@@ -358,13 +339,12 @@ UTEST_F(Instructions, AND_AbsoluteX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_AbsoluteX_NegativeCase)
-{
+UTEST_F(Instructions, AND_AbsoluteX_NegativeCase) {
     static constexpr size_t instruction_count = 3;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x082C, 0xFF);
-    
+
     utest_fixture->ram.write(0x0000, LDA_IMM);
     utest_fixture->ram.write(0x0001, 0xFF);
     utest_fixture->ram.write(0x0002, LDX_IMM);
@@ -381,13 +361,12 @@ UTEST_F(Instructions, AND_AbsoluteX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_AbsoluteY_ZeroCase)
-{
+UTEST_F(Instructions, AND_AbsoluteY_ZeroCase) {
     static constexpr size_t instruction_count = 3;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x082C, 0xFF);
-    
+
     utest_fixture->ram.write(0x0000, LDA_IMM);
     utest_fixture->ram.write(0x0001, 0x00);
     utest_fixture->ram.write(0x0002, LDY_IMM);
@@ -404,13 +383,12 @@ UTEST_F(Instructions, AND_AbsoluteY_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, AND_AbsoluteY_PositiveCase)
-{
+UTEST_F(Instructions, AND_AbsoluteY_PositiveCase) {
     static constexpr size_t instruction_count = 3;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x082C, 0xFF);
-    
+
     utest_fixture->ram.write(0x0000, LDA_IMM);
     utest_fixture->ram.write(0x0001, 0x40);
     utest_fixture->ram.write(0x0002, LDY_IMM);
@@ -427,13 +405,12 @@ UTEST_F(Instructions, AND_AbsoluteY_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, AND_AbsoluteY_NegativeCase)
-{
+UTEST_F(Instructions, AND_AbsoluteY_NegativeCase) {
     static constexpr size_t instruction_count = 3;
- 
+
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x082C, 0xFF);
-    
+
     utest_fixture->ram.write(0x0000, LDA_IMM);
     utest_fixture->ram.write(0x0001, 0xFF);
     utest_fixture->ram.write(0x0002, LDY_IMM);
@@ -450,8 +427,7 @@ UTEST_F(Instructions, AND_AbsoluteY_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_Immediate_ZeroCase)
-{
+UTEST_F(Instructions, LDA_Immediate_ZeroCase) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDA_IMM);
@@ -464,8 +440,7 @@ UTEST_F(Instructions, LDA_Immediate_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDA_Immediate_PositiveCase)
-{
+UTEST_F(Instructions, LDA_Immediate_PositiveCase) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDA_IMM);
@@ -478,8 +453,7 @@ UTEST_F(Instructions, LDA_Immediate_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_Immediate_NegativeCase)
-{
+UTEST_F(Instructions, LDA_Immediate_NegativeCase) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDA_IMM);
@@ -492,8 +466,7 @@ UTEST_F(Instructions, LDA_Immediate_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_ZeroPage_ZeroCase)
-{
+UTEST_F(Instructions, LDA_ZeroPage_ZeroCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x00);
 
@@ -508,8 +481,7 @@ UTEST_F(Instructions, LDA_ZeroPage_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDA_ZeroPage_PositiveCase)
-{
+UTEST_F(Instructions, LDA_ZeroPage_PositiveCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x40);
 
@@ -524,8 +496,7 @@ UTEST_F(Instructions, LDA_ZeroPage_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_ZeroPage_NegativeCase)
-{
+UTEST_F(Instructions, LDA_ZeroPage_NegativeCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x80);
 
@@ -540,8 +511,7 @@ UTEST_F(Instructions, LDA_ZeroPage_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_ZeroPageX_ZeroCase)
-{
+UTEST_F(Instructions, LDA_ZeroPageX_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -551,7 +521,7 @@ UTEST_F(Instructions, LDA_ZeroPageX_ZeroCase)
     utest_fixture->ram.write(0x0001, 0x0F);
     utest_fixture->ram.write(0x0002, LDA_ZPX);
     utest_fixture->ram.write(0x0003, 0x80);
-    
+
     utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
 
     ASSERT_EQ_MSG(0x00, utest_fixture->cpu.a, "The A register's value should be 0x00 (0).");
@@ -560,8 +530,7 @@ UTEST_F(Instructions, LDA_ZeroPageX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDA_ZeroPageX_PositiveCase)
-{
+UTEST_F(Instructions, LDA_ZeroPageX_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -580,8 +549,7 @@ UTEST_F(Instructions, LDA_ZeroPageX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_ZeroPageX_NegativeCase)
-{
+UTEST_F(Instructions, LDA_ZeroPageX_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -600,8 +568,7 @@ UTEST_F(Instructions, LDA_ZeroPageX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_ZeroPageX_WrappingCase)
-{
+UTEST_F(Instructions, LDA_ZeroPageX_WrappingCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -620,8 +587,7 @@ UTEST_F(Instructions, LDA_ZeroPageX_WrappingCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_Absolute_ZeroCase)
-{
+UTEST_F(Instructions, LDA_Absolute_ZeroCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x00);
 
@@ -637,8 +603,7 @@ UTEST_F(Instructions, LDA_Absolute_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDA_Absolute_PositiveCase)
-{
+UTEST_F(Instructions, LDA_Absolute_PositiveCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x40);
 
@@ -654,8 +619,7 @@ UTEST_F(Instructions, LDA_Absolute_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_Absolute_NegativeCase)
-{
+UTEST_F(Instructions, LDA_Absolute_NegativeCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x80);
 
@@ -671,8 +635,7 @@ UTEST_F(Instructions, LDA_Absolute_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_AbsoluteX_ZeroCase)
-{
+UTEST_F(Instructions, LDA_AbsoluteX_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -692,8 +655,7 @@ UTEST_F(Instructions, LDA_AbsoluteX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDA_AbsoluteX_PositiveCase)
-{
+UTEST_F(Instructions, LDA_AbsoluteX_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -713,8 +675,7 @@ UTEST_F(Instructions, LDA_AbsoluteX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_AbsoluteX_NegativeCase)
-{
+UTEST_F(Instructions, LDA_AbsoluteX_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -734,8 +695,7 @@ UTEST_F(Instructions, LDA_AbsoluteX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_AbsoluteY_ZeroCase)
-{
+UTEST_F(Instructions, LDA_AbsoluteY_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -755,8 +715,7 @@ UTEST_F(Instructions, LDA_AbsoluteY_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDA_AbsoluteY_PositiveCase)
-{
+UTEST_F(Instructions, LDA_AbsoluteY_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -776,8 +735,7 @@ UTEST_F(Instructions, LDA_AbsoluteY_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDA_AbsoluteY_NegativeCase)
-{
+UTEST_F(Instructions, LDA_AbsoluteY_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -797,8 +755,7 @@ UTEST_F(Instructions, LDA_AbsoluteY_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_Immediate_ZeroCase)
-{
+UTEST_F(Instructions, LDX_Immediate_ZeroCase) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDX_IMM);
@@ -811,8 +768,7 @@ UTEST_F(Instructions, LDX_Immediate_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDX_Immediate_PositiveCase)
-{
+UTEST_F(Instructions, LDX_Immediate_PositiveCase) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDX_IMM);
@@ -825,8 +781,7 @@ UTEST_F(Instructions, LDX_Immediate_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_Immediate_NegativeCase)
-{
+UTEST_F(Instructions, LDX_Immediate_NegativeCase) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDX_IMM);
@@ -839,8 +794,7 @@ UTEST_F(Instructions, LDX_Immediate_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_ZeroPage_ZeroCase)
-{
+UTEST_F(Instructions, LDX_ZeroPage_ZeroCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x00);
 
@@ -855,8 +809,7 @@ UTEST_F(Instructions, LDX_ZeroPage_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDX_ZeroPage_PositiveCase)
-{
+UTEST_F(Instructions, LDX_ZeroPage_PositiveCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x40);
 
@@ -871,8 +824,7 @@ UTEST_F(Instructions, LDX_ZeroPage_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_ZeroPage_NegativeCase)
-{
+UTEST_F(Instructions, LDX_ZeroPage_NegativeCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x80);
 
@@ -887,8 +839,7 @@ UTEST_F(Instructions, LDX_ZeroPage_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_ZeroPageY_ZeroCase)
-{
+UTEST_F(Instructions, LDX_ZeroPageY_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -907,8 +858,7 @@ UTEST_F(Instructions, LDX_ZeroPageY_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDX_ZeroPageY_PositiveCase)
-{
+UTEST_F(Instructions, LDX_ZeroPageY_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -927,8 +877,7 @@ UTEST_F(Instructions, LDX_ZeroPageY_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_ZeroPageY_NegativeCase)
-{
+UTEST_F(Instructions, LDX_ZeroPageY_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -946,8 +895,7 @@ UTEST_F(Instructions, LDX_ZeroPageY_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_ZeroPageY_WrappingCase)
-{
+UTEST_F(Instructions, LDX_ZeroPageY_WrappingCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -966,8 +914,7 @@ UTEST_F(Instructions, LDX_ZeroPageY_WrappingCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_Absolute_ZeroCase)
-{
+UTEST_F(Instructions, LDX_Absolute_ZeroCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x00);
 
@@ -983,8 +930,7 @@ UTEST_F(Instructions, LDX_Absolute_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDX_Absolute_PositiveCase)
-{
+UTEST_F(Instructions, LDX_Absolute_PositiveCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x40);
 
@@ -1000,8 +946,7 @@ UTEST_F(Instructions, LDX_Absolute_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_Absolute_NegativeCase)
-{
+UTEST_F(Instructions, LDX_Absolute_NegativeCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x80);
 
@@ -1017,8 +962,7 @@ UTEST_F(Instructions, LDX_Absolute_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_AbsoluteY_ZeroCase)
-{
+UTEST_F(Instructions, LDX_AbsoluteY_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1038,8 +982,7 @@ UTEST_F(Instructions, LDX_AbsoluteY_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDX_AbsoluteY_PositiveCase)
-{
+UTEST_F(Instructions, LDX_AbsoluteY_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1059,8 +1002,7 @@ UTEST_F(Instructions, LDX_AbsoluteY_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDX_AbsoluteY_NegativeCase)
-{
+UTEST_F(Instructions, LDX_AbsoluteY_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1080,8 +1022,7 @@ UTEST_F(Instructions, LDX_AbsoluteY_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_Immediate_ZeroCase)
-{
+UTEST_F(Instructions, LDY_Immediate_ZeroCase) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDY_IMM);
@@ -1094,8 +1035,7 @@ UTEST_F(Instructions, LDY_Immediate_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDY_Immediate_PositiveCase)
-{
+UTEST_F(Instructions, LDY_Immediate_PositiveCase) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDY_IMM);
@@ -1108,8 +1048,7 @@ UTEST_F(Instructions, LDY_Immediate_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_Immediate_NegativeCase)
-{
+UTEST_F(Instructions, LDY_Immediate_NegativeCase) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, LDY_IMM);
@@ -1122,8 +1061,7 @@ UTEST_F(Instructions, LDY_Immediate_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_ZeroPage_ZeroCase)
-{
+UTEST_F(Instructions, LDY_ZeroPage_ZeroCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x00);
 
@@ -1138,8 +1076,7 @@ UTEST_F(Instructions, LDY_ZeroPage_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDY_ZeroPage_PositiveCase)
-{
+UTEST_F(Instructions, LDY_ZeroPage_PositiveCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x40);
 
@@ -1154,8 +1091,7 @@ UTEST_F(Instructions, LDY_ZeroPage_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_ZeroPage_NegativeCase)
-{
+UTEST_F(Instructions, LDY_ZeroPage_NegativeCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x80);
 
@@ -1170,8 +1106,7 @@ UTEST_F(Instructions, LDY_ZeroPage_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_ZeroPageX_ZeroCase)
-{
+UTEST_F(Instructions, LDY_ZeroPageX_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1190,8 +1125,7 @@ UTEST_F(Instructions, LDY_ZeroPageX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDY_ZeroPageX_PositiveCase)
-{
+UTEST_F(Instructions, LDY_ZeroPageX_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1210,8 +1144,7 @@ UTEST_F(Instructions, LDY_ZeroPageX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_ZeroPageX_NegativeCase)
-{
+UTEST_F(Instructions, LDY_ZeroPageX_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1229,8 +1162,7 @@ UTEST_F(Instructions, LDY_ZeroPageX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_ZeroPageX_WrappingCase)
-{
+UTEST_F(Instructions, LDY_ZeroPageX_WrappingCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1249,8 +1181,7 @@ UTEST_F(Instructions, LDY_ZeroPageX_WrappingCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_Absolute_ZeroCase)
-{
+UTEST_F(Instructions, LDY_Absolute_ZeroCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x00);
 
@@ -1266,8 +1197,7 @@ UTEST_F(Instructions, LDY_Absolute_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDY_Absolute_PositiveCase)
-{
+UTEST_F(Instructions, LDY_Absolute_PositiveCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x40);
 
@@ -1283,8 +1213,7 @@ UTEST_F(Instructions, LDY_Absolute_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_Absolute_NegativeCase)
-{
+UTEST_F(Instructions, LDY_Absolute_NegativeCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x80);
 
@@ -1300,8 +1229,7 @@ UTEST_F(Instructions, LDY_Absolute_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_AbsoluteX_ZeroCase)
-{
+UTEST_F(Instructions, LDY_AbsoluteX_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1321,8 +1249,7 @@ UTEST_F(Instructions, LDY_AbsoluteX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, LDY_AbsoluteX_PositiveCase)
-{
+UTEST_F(Instructions, LDY_AbsoluteX_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1342,8 +1269,7 @@ UTEST_F(Instructions, LDY_AbsoluteX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, LDY_AbsoluteX_NegativeCase)
-{
+UTEST_F(Instructions, LDY_AbsoluteX_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1363,8 +1289,7 @@ UTEST_F(Instructions, LDY_AbsoluteX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, SetC)
-{
+UTEST_F(Instructions, SetC) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, SEC);
@@ -1374,8 +1299,7 @@ UTEST_F(Instructions, SetC)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & 0x01), "The carry status flag should be set.");
 }
 
-UTEST_F(Instructions, SetD)
-{
+UTEST_F(Instructions, SetD) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, SED);
@@ -1385,8 +1309,7 @@ UTEST_F(Instructions, SetD)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & 0x08), "The decimal status flag should be set.");
 }
 
-UTEST_F(Instructions, SetI)
-{
+UTEST_F(Instructions, SetI) {
     utest_fixture->cpu.reset();
 
     utest_fixture->ram.write(0x0000, SEI);
@@ -1396,8 +1319,7 @@ UTEST_F(Instructions, SetI)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & 0x04), "The interrupt status flag should be set.");
 }
 
-UTEST_F(Instructions, ClearC)
-{
+UTEST_F(Instructions, ClearC) {
     utest_fixture->cpu.reset();
     utest_fixture->cpu.s |= 0x01;
 
@@ -1408,8 +1330,7 @@ UTEST_F(Instructions, ClearC)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & 0x01), "The carry status flag should not be set.");
 }
 
-UTEST_F(Instructions, ClearD)
-{
+UTEST_F(Instructions, ClearD) {
     utest_fixture->cpu.reset();
     utest_fixture->cpu.s |= 0x08;
 
@@ -1420,8 +1341,7 @@ UTEST_F(Instructions, ClearD)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & 0x08), "The decimal status flag should not be set.");
 }
 
-UTEST_F(Instructions, ClearI)
-{
+UTEST_F(Instructions, ClearI) {
     utest_fixture->cpu.reset();
     utest_fixture->cpu.s |= 0x04;
 
@@ -1432,8 +1352,7 @@ UTEST_F(Instructions, ClearI)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & 0x04), "The interrupt status flag should not be set.");
 }
 
-UTEST_F(Instructions, ClearV)
-{
+UTEST_F(Instructions, ClearV) {
     utest_fixture->cpu.reset();
     utest_fixture->cpu.s |= 0x40;
 
@@ -1444,8 +1363,7 @@ UTEST_F(Instructions, ClearV)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & 0x40), "The overflow status flag should not be set.");
 }
 
-UTEST_F(Instructions, STA_ZeroPage)
-{
+UTEST_F(Instructions, STA_ZeroPage) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1460,8 +1378,7 @@ UTEST_F(Instructions, STA_ZeroPage)
     ASSERT_EQ_MSG(utest_fixture->ram.read(0xFF), utest_fixture->cpu.a, "The zero page address 0xFF should contain the A register's value 0x40 (64).");
 }
 
-UTEST_F(Instructions, STA_ZeroPageX)
-{
+UTEST_F(Instructions, STA_ZeroPageX) {
     static constexpr size_t instruction_count = 3;
 
     utest_fixture->cpu.reset();
@@ -1470,7 +1387,7 @@ UTEST_F(Instructions, STA_ZeroPageX)
     utest_fixture->ram.write(0x0001, 0x40);
     utest_fixture->ram.write(0x0002, LDX_IMM);
     utest_fixture->ram.write(0x0003, 0xFF);
-    utest_fixture->ram.write(0x0004, STA_ZPX); 
+    utest_fixture->ram.write(0x0004, STA_ZPX);
     utest_fixture->ram.write(0x0005, 0x80);
 
     utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
@@ -1479,8 +1396,7 @@ UTEST_F(Instructions, STA_ZeroPageX)
     ASSERT_EQ_MSG(utest_fixture->ram.read(0x007F), utest_fixture->cpu.a, "The zero page address 0x007F should contain the A register's value 0x40 (64).");
 }
 
-UTEST_F(Instructions, STA_Absolute)
-{
+UTEST_F(Instructions, STA_Absolute) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1496,8 +1412,7 @@ UTEST_F(Instructions, STA_Absolute)
     ASSERT_EQ_MSG(utest_fixture->ram.read(0xAABB), utest_fixture->cpu.a, "The address 0xAABB should contain the A register's value 0x40 (64).");
 }
 
-UTEST_F(Instructions, STX_ZeroPage)
-{
+UTEST_F(Instructions, STX_ZeroPage) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1512,8 +1427,7 @@ UTEST_F(Instructions, STX_ZeroPage)
     ASSERT_EQ_MSG(utest_fixture->ram.read(0xFF), utest_fixture->cpu.x, "The zero page address 0xFF should contain the X register's value 0x40 (64).");
 }
 
-UTEST_F(Instructions, STX_ZeroPageY)
-{
+UTEST_F(Instructions, STX_ZeroPageY) {
     static constexpr size_t instruction_count = 3;
 
     utest_fixture->cpu.reset();
@@ -1522,7 +1436,7 @@ UTEST_F(Instructions, STX_ZeroPageY)
     utest_fixture->ram.write(0x0001, 0x40);
     utest_fixture->ram.write(0x0002, LDY_IMM);
     utest_fixture->ram.write(0x0003, 0xFF);
-    utest_fixture->ram.write(0x0004, STX_ZPY); 
+    utest_fixture->ram.write(0x0004, STX_ZPY);
     utest_fixture->ram.write(0x0005, 0x80);
 
     utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
@@ -1531,8 +1445,7 @@ UTEST_F(Instructions, STX_ZeroPageY)
     ASSERT_EQ_MSG(utest_fixture->ram.read(0x007F), utest_fixture->cpu.x, "The zero page address 0x007F should contain the X register's value 0x40 (64).");
 }
 
-UTEST_F(Instructions, STX_Absolute)
-{
+UTEST_F(Instructions, STX_Absolute) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1548,8 +1461,7 @@ UTEST_F(Instructions, STX_Absolute)
     ASSERT_EQ_MSG(utest_fixture->ram.read(0xAABB), utest_fixture->cpu.x, "The address 0xAABB should contain the X register's value 0x40 (64).");
 }
 
-UTEST_F(Instructions, STY_ZeroPage)
-{
+UTEST_F(Instructions, STY_ZeroPage) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1564,8 +1476,7 @@ UTEST_F(Instructions, STY_ZeroPage)
     ASSERT_EQ_MSG(utest_fixture->ram.read(0xFF), utest_fixture->cpu.y, "The zero page address 0xFF should contain the Y register's value 0x40 (64).");
 }
 
-UTEST_F(Instructions, STY_ZeroPageX)
-{
+UTEST_F(Instructions, STY_ZeroPageX) {
     static constexpr size_t instruction_count = 3;
 
     utest_fixture->cpu.reset();
@@ -1574,7 +1485,7 @@ UTEST_F(Instructions, STY_ZeroPageX)
     utest_fixture->ram.write(0x0001, 0x40);
     utest_fixture->ram.write(0x0002, LDX_IMM);
     utest_fixture->ram.write(0x0003, 0xFF);
-    utest_fixture->ram.write(0x0004, STY_ZPX); 
+    utest_fixture->ram.write(0x0004, STY_ZPX);
     utest_fixture->ram.write(0x0005, 0x80);
 
     utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
@@ -1583,8 +1494,7 @@ UTEST_F(Instructions, STY_ZeroPageX)
     ASSERT_EQ_MSG(utest_fixture->ram.read(0x007F), utest_fixture->cpu.y, "The zero page address 0x007F should contain the Y register's value 0x40 (64).");
 }
 
-UTEST_F(Instructions, STY_Absolute)
-{
+UTEST_F(Instructions, STY_Absolute) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1600,8 +1510,7 @@ UTEST_F(Instructions, STY_Absolute)
     ASSERT_EQ_MSG(utest_fixture->ram.read(0xAABB), utest_fixture->cpu.y, "The address 0xAABB should contain the Y register's value 0x40 (64).");
 }
 
-UTEST_F(Instructions, TAX_ZeroCase)
-{
+UTEST_F(Instructions, TAX_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1617,8 +1526,7 @@ UTEST_F(Instructions, TAX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, TAX_PositiveCase)
-{
+UTEST_F(Instructions, TAX_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1634,8 +1542,7 @@ UTEST_F(Instructions, TAX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, TAX_NegativeCase)
-{
+UTEST_F(Instructions, TAX_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1651,8 +1558,7 @@ UTEST_F(Instructions, TAX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, TAY_ZeroCase)
-{
+UTEST_F(Instructions, TAY_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1668,8 +1574,7 @@ UTEST_F(Instructions, TAY_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, TAY_PositiveCase)
-{
+UTEST_F(Instructions, TAY_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1685,8 +1590,7 @@ UTEST_F(Instructions, TAY_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, TAY_NegativeCase)
-{
+UTEST_F(Instructions, TAY_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1702,8 +1606,7 @@ UTEST_F(Instructions, TAY_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, TSX_ZeroCase)
-{
+UTEST_F(Instructions, TSX_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1718,8 +1621,7 @@ UTEST_F(Instructions, TSX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, TSX_PositiveCase)
-{
+UTEST_F(Instructions, TSX_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1734,8 +1636,7 @@ UTEST_F(Instructions, TSX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, TSX_NegativeCase)
-{
+UTEST_F(Instructions, TSX_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1750,8 +1651,7 @@ UTEST_F(Instructions, TSX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, TXA_ZeroCase)
-{
+UTEST_F(Instructions, TXA_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1767,8 +1667,7 @@ UTEST_F(Instructions, TXA_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, TXA_PositiveCase)
-{
+UTEST_F(Instructions, TXA_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1784,8 +1683,7 @@ UTEST_F(Instructions, TXA_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, TXA_NegativeCase)
-{
+UTEST_F(Instructions, TXA_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1801,8 +1699,7 @@ UTEST_F(Instructions, TXA_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, TXS)
-{
+UTEST_F(Instructions, TXS) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1816,8 +1713,7 @@ UTEST_F(Instructions, TXS)
     ASSERT_EQ_MSG(utest_fixture->cpu.sp, utest_fixture->cpu.x, "The stack pointer register should contain the X register's value 0xFF (255).");
 }
 
-UTEST_F(Instructions, TYA_ZeroCase)
-{
+UTEST_F(Instructions, TYA_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1833,8 +1729,7 @@ UTEST_F(Instructions, TYA_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, TYA_PositiveCase)
-{
+UTEST_F(Instructions, TYA_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1850,8 +1745,7 @@ UTEST_F(Instructions, TYA_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, TYA_NegativeCase)
-{
+UTEST_F(Instructions, TYA_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1867,8 +1761,7 @@ UTEST_F(Instructions, TYA_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, DEC_ZeroPage_ZeroCase)
-{
+UTEST_F(Instructions, DEC_ZeroPage_ZeroCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x01);
 
@@ -1882,8 +1775,7 @@ UTEST_F(Instructions, DEC_ZeroPage_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, DEC_ZeroPage_PositiveCase)
-{
+UTEST_F(Instructions, DEC_ZeroPage_PositiveCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x41);
 
@@ -1897,8 +1789,7 @@ UTEST_F(Instructions, DEC_ZeroPage_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, DEC_ZeroPage_NegativeCase)
-{
+UTEST_F(Instructions, DEC_ZeroPage_NegativeCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x00);
 
@@ -1912,8 +1803,7 @@ UTEST_F(Instructions, DEC_ZeroPage_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, DEC_ZeroPageX_ZeroCase)
-{
+UTEST_F(Instructions, DEC_ZeroPageX_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1932,8 +1822,7 @@ UTEST_F(Instructions, DEC_ZeroPageX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, DEC_ZeroPageX_PositiveCase)
-{
+UTEST_F(Instructions, DEC_ZeroPageX_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1952,8 +1841,7 @@ UTEST_F(Instructions, DEC_ZeroPageX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, DEC_ZeroPageX_NegativeCase)
-{
+UTEST_F(Instructions, DEC_ZeroPageX_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -1972,8 +1860,7 @@ UTEST_F(Instructions, DEC_ZeroPageX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, DEC_Absolute_ZeroCase)
-{
+UTEST_F(Instructions, DEC_Absolute_ZeroCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x01);
 
@@ -1989,8 +1876,7 @@ UTEST_F(Instructions, DEC_Absolute_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, DEC_Absolute_PositiveCase)
-{
+UTEST_F(Instructions, DEC_Absolute_PositiveCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x41);
 
@@ -2006,8 +1892,7 @@ UTEST_F(Instructions, DEC_Absolute_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, DEC_Absolute_NegativeCase)
-{
+UTEST_F(Instructions, DEC_Absolute_NegativeCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x00);
 
@@ -2023,8 +1908,67 @@ UTEST_F(Instructions, DEC_Absolute_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, DEX_ZeroCase)
-{
+UTEST_F(Instructions, DEC_AbsoluteX_ZeroCase) {
+    static constexpr size_t instruction_count = 2;
+
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0x01);
+
+    utest_fixture->ram.write(0x0000, LDX_IMM);
+    utest_fixture->ram.write(0x0001, 0x5C);
+    utest_fixture->ram.write(0x0002, DEC_ABSX);
+    utest_fixture->ram.write(0x0003, 0xD0);
+    utest_fixture->ram.write(0x0004, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(utest_fixture->ram.read(0x082C), 0x00, "The value at memory address 0x082C should be 0x00 (0).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_write, "The value at memory address 0x082C should have been decremented.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
+}
+
+UTEST_F(Instructions, DEC_AbsoluteX_PositiveCase) {
+    static constexpr size_t instruction_count = 2;
+
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0x41);
+
+    utest_fixture->ram.write(0x0000, LDX_IMM);
+    utest_fixture->ram.write(0x0001, 0x5C);
+    utest_fixture->ram.write(0x0002, DEC_ABSX);
+    utest_fixture->ram.write(0x0003, 0xD0);
+    utest_fixture->ram.write(0x0004, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(utest_fixture->ram.read(0x082C), 0x40, "The value at memory address 0x082C should be 0x40 (64).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_write, "The value at memory address 0x082C should have been decremented.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, DEC_AbsoluteX_NegativeCase) {
+    static constexpr size_t instruction_count = 2;
+
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0x00);
+
+    utest_fixture->ram.write(0x0000, LDX_IMM);
+    utest_fixture->ram.write(0x0001, 0x5C);
+    utest_fixture->ram.write(0x0002, DEC_ABSX);
+    utest_fixture->ram.write(0x0003, 0xD0);
+    utest_fixture->ram.write(0x0004, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(utest_fixture->ram.read(0x082C), 0xFF, "The value at memory address 0x082C should be 0xFF (255).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_write, "The value at memory address 0x082C should have been decremented.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, DEX_ZeroCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2040,8 +1984,7 @@ UTEST_F(Instructions, DEX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, DEX_PositiveCase)
-{
+UTEST_F(Instructions, DEX_PositiveCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2057,8 +2000,7 @@ UTEST_F(Instructions, DEX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, DEX_NegativeCase)
-{
+UTEST_F(Instructions, DEX_NegativeCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2074,8 +2016,7 @@ UTEST_F(Instructions, DEX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, DEY_ZeroCase)
-{
+UTEST_F(Instructions, DEY_ZeroCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2091,8 +2032,7 @@ UTEST_F(Instructions, DEY_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, DEY_PositiveCase)
-{
+UTEST_F(Instructions, DEY_PositiveCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2108,8 +2048,7 @@ UTEST_F(Instructions, DEY_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, DEY_NegativeCase)
-{
+UTEST_F(Instructions, DEY_NegativeCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2125,8 +2064,7 @@ UTEST_F(Instructions, DEY_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, INC_ZeroPage_ZeroCase)
-{
+UTEST_F(Instructions, INC_ZeroPage_ZeroCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0xFF);
 
@@ -2140,8 +2078,7 @@ UTEST_F(Instructions, INC_ZeroPage_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, INC_ZeroPage_PositiveCase)
-{
+UTEST_F(Instructions, INC_ZeroPage_PositiveCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x3F);
 
@@ -2155,8 +2092,7 @@ UTEST_F(Instructions, INC_ZeroPage_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, INC_ZeroPage_NegativeCase)
-{
+UTEST_F(Instructions, INC_ZeroPage_NegativeCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0x00FF, 0x7F);
 
@@ -2170,8 +2106,7 @@ UTEST_F(Instructions, INC_ZeroPage_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, INC_ZeroPageX_ZeroCase)
-{
+UTEST_F(Instructions, INC_ZeroPageX_ZeroCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2190,8 +2125,7 @@ UTEST_F(Instructions, INC_ZeroPageX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, INC_ZeroPageX_PositiveCase)
-{
+UTEST_F(Instructions, INC_ZeroPageX_PositiveCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2210,8 +2144,7 @@ UTEST_F(Instructions, INC_ZeroPageX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, INC_ZeroPageX_NegativeCase)
-{
+UTEST_F(Instructions, INC_ZeroPageX_NegativeCase) {
     static constexpr size_t instruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2230,8 +2163,7 @@ UTEST_F(Instructions, INC_ZeroPageX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, INC_Absolute_ZeroCase)
-{
+UTEST_F(Instructions, INC_Absolute_ZeroCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0xFF);
 
@@ -2247,8 +2179,7 @@ UTEST_F(Instructions, INC_Absolute_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, INC_Absolute_PositiveCase)
-{
+UTEST_F(Instructions, INC_Absolute_PositiveCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x3F);
 
@@ -2264,8 +2195,7 @@ UTEST_F(Instructions, INC_Absolute_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, INC_Absolute_NegativeCase)
-{
+UTEST_F(Instructions, INC_Absolute_NegativeCase) {
     utest_fixture->cpu.reset();
     utest_fixture->ram.write(0xAABB, 0x7F);
 
@@ -2281,8 +2211,67 @@ UTEST_F(Instructions, INC_Absolute_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, INX_ZeroCase)
-{
+UTEST_F(Instructions, INC_AbsoluteX_ZeroCase) {
+    static constexpr size_t instruction_count = 2;
+
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0xFF);
+
+    utest_fixture->ram.write(0x0000, LDX_IMM);
+    utest_fixture->ram.write(0x0001, 0x5C);
+    utest_fixture->ram.write(0x0002, INC_ABSX);
+    utest_fixture->ram.write(0x0003, 0xD0);
+    utest_fixture->ram.write(0x0004, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(utest_fixture->ram.read(0x082C), 0x00, "The value at memory address 0x082C should be 0x00 (0).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_write, "The value at memory address 0x082C should have been incremented.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
+}
+
+UTEST_F(Instructions, INC_AbsoluteX_PositiveCase) {
+    static constexpr size_t instruction_count = 2;
+
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0x3F);
+
+    utest_fixture->ram.write(0x0000, LDX_IMM);
+    utest_fixture->ram.write(0x0001, 0x5C);
+    utest_fixture->ram.write(0x0002, INC_ABSX);
+    utest_fixture->ram.write(0x0003, 0xD0);
+    utest_fixture->ram.write(0x0004, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(utest_fixture->ram.read(0x082C), 0x40, "The value at memory address 0x082C should be 0x40 (64).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_write, "The value at memory address 0x082C should have been incremented.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should not be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, INC_AbsoluteX_NegativeCase) {
+    static constexpr size_t instruction_count = 2;
+
+    utest_fixture->cpu.reset();
+    utest_fixture->ram.write(0x082C, 0x7F);
+
+    utest_fixture->ram.write(0x0000, LDX_IMM);
+    utest_fixture->ram.write(0x0001, 0x5C);
+    utest_fixture->ram.write(0x0002, INC_ABSX);
+    utest_fixture->ram.write(0x0003, 0xD0);
+    utest_fixture->ram.write(0x0004, 0x07);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(utest_fixture->ram.read(0x082C), 0x80, "The value at memory address 0x082C should be 0x80 (128).");
+    ASSERT_EQ_MSG(0x082C, utest_fixture->ram.most_recent_write, "The value at memory address 0x082C should have been incremented.");
+    ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should be set.");
+    ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
+}
+
+UTEST_F(Instructions, INX_ZeroCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2298,8 +2287,7 @@ UTEST_F(Instructions, INX_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, INX_PositiveCase)
-{
+UTEST_F(Instructions, INX_PositiveCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2315,8 +2303,7 @@ UTEST_F(Instructions, INX_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, INX_NegativeCase)
-{
+UTEST_F(Instructions, INX_NegativeCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2332,8 +2319,7 @@ UTEST_F(Instructions, INX_NegativeCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, INY_ZeroCase)
-{
+UTEST_F(Instructions, INY_ZeroCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2349,8 +2335,7 @@ UTEST_F(Instructions, INY_ZeroCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should be set.");
 }
 
-UTEST_F(Instructions, INY_PositiveCase)
-{
+UTEST_F(Instructions, INY_PositiveCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2366,8 +2351,7 @@ UTEST_F(Instructions, INY_PositiveCase)
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
 
-UTEST_F(Instructions, INY_NegativeCase)
-{
+UTEST_F(Instructions, INY_NegativeCase) {
     static constexpr size_t intstruction_count = 2;
 
     utest_fixture->cpu.reset();
@@ -2382,4 +2366,3 @@ UTEST_F(Instructions, INY_NegativeCase)
     ASSERT_TRUE_MSG((utest_fixture->cpu.s & CPU::NEGATIVE_FLAG), "The negative status flag should be set.");
     ASSERT_FALSE_MSG((utest_fixture->cpu.s & CPU::ZERO_FLAG), "The zero status flag should not be set.");
 }
-
