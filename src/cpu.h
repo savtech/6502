@@ -34,11 +34,16 @@ struct CPU {
     void write_byte(RAM& ram, const u16 address, const u8 data) const;
     void reset();
     [[nodiscard]] bool has_status(const u8 flags) const;
-    void set_status(const u8 flags);
-    void clear_status(const u8 flags);
+    void set_status(const u8 flags, const bool set);
     void update_status(const u8 address, const u8 flags);
 
-    void debug_print_instruction(const char* instruction_name, const u16 data = 0x0000) const;
+    struct DebugData {
+        const char* instruction = "NULL";
+        u16 address             = 0x0000;
+        u8 value                = 0x00;
+    };
+
+    void debug_print_instruction(const DebugData& data = {}) const;
 };
 
 void CPU::execute(RAM& ram) {
@@ -69,9 +74,7 @@ u16 CPU::next_word(RAM& ram) {
     u8 lsb = next_byte(ram);
     u8 msb = next_byte(ram);
 
-    u16 data = ((msb << 8) | lsb); // The 6502 is little endian
-
-    return data;
+    return ((msb << 8) | lsb); // The 6502 is little endian
 }
 
 void CPU::write_byte(RAM& ram, const u16 address, const u8 data) const {
@@ -86,33 +89,33 @@ bool CPU::has_status(const u8 flags) const {
     return (s & flags) > 0;
 }
 
-void CPU::set_status(const u8 flags) {
-    s |= flags;
-}
-
-void CPU::clear_status(const u8 flags) {
-    s &= ~flags;
+void CPU::set_status(const u8 flags, const bool set) {
+    if(set) {
+        s |= flags;
+    } else {
+        s &= ~flags;
+    }
 }
 
 void CPU::update_status(const u8 address, const u8 flags) {
     if((ZERO_FLAG & flags) > 0) {
-        (address == 0x00) ? set_status(ZERO_FLAG) : clear_status(ZERO_FLAG);
+        (address == 0x00) ? set_status(ZERO_FLAG, true) : set_status(ZERO_FLAG, false);
     }
 
     if((NEGATIVE_FLAG & flags) > 0) {
-        (address & 0x80) ? set_status(NEGATIVE_FLAG) : clear_status(NEGATIVE_FLAG);
+        (address & 0x80) ? set_status(NEGATIVE_FLAG, true) : set_status(NEGATIVE_FLAG, false);
     }
 }
 
-void CPU::debug_print_instruction(const char* instruction_name, u16 data) const {
+void CPU::debug_print_instruction(const DebugData& data) const {
     if(!debug) return;
 
     printf(
         "[%-*s] 0x%4.4x (%5i) |||||||||| REGISTERS: [PC] 0x%4.4x [SP] 0x%2.2x [A] 0x%2.2x (%3i) | [X] 0x%2.2x (%3i) | [Y] 0x%2.2x (%3i) |||||||||||| FLAGS: [N] %c [V] %c [~] %c [B] %c [D] %c [I] %c [Z] %c [C] %c\n",
         8,
-        instruction_name,
-        data,
-        data,
+        data.instruction,
+        data.address,
+        data.value,
         pc,
         sp,
         a,

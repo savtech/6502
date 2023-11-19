@@ -17,14 +17,25 @@ if not defined VSCMD_ARG_TGT_ARCH (
 
 setlocal ENABLEDELAYEDEXPANSION
 
+    if "%~1"=="-d" (
+        set "debugMode=1"
+    ) else (
+        set "debugMode=0"
+    )
+
     set "exeName=nestest.exe"
-    set "compilerFlags=-O2 -W4 -WX -nologo -std:c++20 -Zc:strictStrings -GR- -favor:INTEL64 -cgthreads8 -MP"
-    @REM set "ignoreWarnings=-wd4100 -wd4101 -wd4189 -wd4806"
-    set "ignoreWarnings=-wd4100";
+    set "compilerFlags= -W4 -WX -nologo -std:c++20 -Zc:strictStrings -GR- -favor:INTEL64 -cgthreads8 -MP"
+    set "ignoreWarnings=-wd4100 -wd4101 -wd4189 -wd4806"
     set "linkerFlags=-INCREMENTAL:NO"
 
-    if exist *.exe del *.exe
+    if %debugMode%==0 (
+        set "compilerFlags=%compilerFlags% -O2"
+    ) else (
+        set "compilerFlags=%compilerFlags% -Od -FC -Zi -MTd"
+    )
 
+    if exist *.exe del *.exe
+    if exist *.pdb del *.pdb
     if not exist build\NUL mkdir build
 
     pushd build
@@ -41,7 +52,9 @@ setlocal ENABLEDELAYEDEXPANSION
     popd
 
     @rem Cleanup
-    rmdir /s /q build
+    if %debugMode%==0 (
+        rmdir /s /q build
+    )
 
     echo %__outputMessage%
 

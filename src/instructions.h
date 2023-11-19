@@ -7,6 +7,8 @@
 constexpr u8
     // NOP===============================================
     NOP = 0xEA,
+    // ADC===============================================
+    ADC_ABS = 0x6D,
     // AND===============================================
     AND_IMM  = 0x29,
     AND_ZP   = 0x25,
@@ -101,7 +103,33 @@ void _unsupported(CPU& cpu, RAM& ram) {
 }
 
 void _nop(CPU& cpu, RAM& ram) {
-    cpu.debug_print_instruction("NOP");
+    CPU::DebugData data;
+    data.instruction = "NOP";
+
+    cpu.debug_print_instruction(data);
+}
+
+void _adc_abs(CPU& cpu, RAM& ram) {
+    u16 address = cpu.next_word(ram);
+    u8 value    = cpu.read_byte(ram, address);
+
+    // utilize a 16 bit integer for convenience (note: this is not how a physical 6502 would operate, but this is fine for our emulation)
+    u16 result = cpu.a + value + cpu.has_status(CPU::CARRY_FLAG);
+
+    const bool overflowed = (~(cpu.a ^ value) & (cpu.a ^ result)) & 0x0080;
+    cpu.set_status(CPU::OVERFLOW_FLAG, overflowed);
+    cpu.set_status(CPU::CARRY_FLAG, result > 0xFF);
+    cpu.set_status(CPU::ZERO_FLAG, (result & 0x00FF) == 0);
+    cpu.set_status(CPU::NEGATIVE_FLAG, result & 0x0080);
+
+    cpu.a = result & 0x00FF;
+
+    CPU::DebugData data;
+    data.instruction = "ADC_ABS";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _and_imm(CPU& cpu, RAM& ram) {
@@ -109,7 +137,12 @@ void _and_imm(CPU& cpu, RAM& ram) {
     cpu.a &= value;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("AND_IMM", value);
+    CPU::DebugData data;
+    data.instruction = "AND_IMM";
+    data.address     = ram.most_recent_read;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _and_zp(CPU& cpu, RAM& ram) {
@@ -118,7 +151,12 @@ void _and_zp(CPU& cpu, RAM& ram) {
     cpu.a &= value;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("AND_ZP", value);
+    CPU::DebugData data;
+    data.instruction = "AND_ZP";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _and_zpx(CPU& cpu, RAM& ram) {
@@ -127,7 +165,12 @@ void _and_zpx(CPU& cpu, RAM& ram) {
     cpu.a &= value;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("AND_ZPX", value);
+    CPU::DebugData data;
+    data.instruction = "AND_ZPX";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _and_abs(CPU& cpu, RAM& ram) {
@@ -136,7 +179,12 @@ void _and_abs(CPU& cpu, RAM& ram) {
     cpu.a &= value;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("AND_ABS", value);
+    CPU::DebugData data;
+    data.instruction = "AND_ABS";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _and_absx(CPU& cpu, RAM& ram) {
@@ -145,7 +193,12 @@ void _and_absx(CPU& cpu, RAM& ram) {
     cpu.a &= value;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("AND_ABSX", value);
+    CPU::DebugData data;
+    data.instruction = "AND_ABSX";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _and_absy(CPU& cpu, RAM& ram) {
@@ -154,7 +207,12 @@ void _and_absy(CPU& cpu, RAM& ram) {
     cpu.a &= value;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("AND_ABSY", value);
+    CPU::DebugData data;
+    data.instruction = "AND_ABSY";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _lda_imm(CPU& cpu, RAM& ram) {
@@ -162,7 +220,11 @@ void _lda_imm(CPU& cpu, RAM& ram) {
     cpu.a    = value;
     cpu.update_status(value, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDA_IMM", value);
+    CPU::DebugData data;
+    data.instruction = "LDA_IMM";
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _lda_zp(CPU& cpu, RAM& ram) {
@@ -171,7 +233,12 @@ void _lda_zp(CPU& cpu, RAM& ram) {
     cpu.a      = value;
     cpu.update_status(value, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDA_ZP", address);
+    CPU::DebugData data;
+    data.instruction = "LDA_ZP";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _lda_zpx(CPU& cpu, RAM& ram) {
@@ -180,31 +247,54 @@ void _lda_zpx(CPU& cpu, RAM& ram) {
     cpu.a      = value;
     cpu.update_status(value, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDA_ZPX", address);
+    CPU::DebugData data;
+    data.instruction = "LDA_ZPX";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _lda_abs(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram);
-    cpu.a       = cpu.read_byte(ram, address);
+    u8 value    = cpu.read_byte(ram, address);
+    cpu.a       = value;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDA_ABS", address);
+    CPU::DebugData data;
+    data.instruction = "LDA_ABS";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _lda_absx(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram) + cpu.x;
-    cpu.a       = cpu.read_byte(ram, address);
+    u8 value    = cpu.read_byte(ram, address);
+    cpu.a       = value;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDA_ABSX", address);
+    CPU::DebugData data;
+    data.instruction = "LDA_ABSX";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _lda_absy(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram) + cpu.y;
-    cpu.a       = cpu.read_byte(ram, address);
+    u8 value    = cpu.read_byte(ram, address);
+    cpu.a       = value;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDA_ABSY", address);
+    CPU::DebugData data;
+    data.instruction = "LDA_ABSY";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _ldx_imm(CPU& cpu, RAM& ram) {
@@ -212,7 +302,11 @@ void _ldx_imm(CPU& cpu, RAM& ram) {
     cpu.x    = value;
     cpu.update_status(value, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDX_IMM", value);
+    CPU::DebugData data;
+    data.instruction = "LDX_IMM";
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _ldx_zp(CPU& cpu, RAM& ram) {
@@ -221,7 +315,12 @@ void _ldx_zp(CPU& cpu, RAM& ram) {
     cpu.x      = value;
     cpu.update_status(value, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDX_ZP", address);
+    CPU::DebugData data;
+    data.instruction = "LDX_ZP";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _ldx_zpy(CPU& cpu, RAM& ram) {
@@ -230,23 +329,40 @@ void _ldx_zpy(CPU& cpu, RAM& ram) {
     cpu.x      = value;
     cpu.update_status(value, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDX_ZPY", address);
+    CPU::DebugData data;
+    data.instruction = "LDX_ZPY";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _ldx_abs(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram);
-    cpu.x       = cpu.read_byte(ram, address);
+    u8 value    = cpu.read_byte(ram, address);
+    cpu.x       = value;
     cpu.update_status(cpu.x, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDX_ABS", address);
+    CPU::DebugData data;
+    data.instruction = "LDX_ABS";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _ldx_absy(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram) + cpu.y;
-    cpu.x       = cpu.read_byte(ram, address);
+    u8 value    = cpu.read_byte(ram, address);
+    cpu.x       = value;
     cpu.update_status(cpu.x, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDX_ABSY", address);
+    CPU::DebugData data;
+    data.instruction = "LDX_ABSY";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _ldy_imm(CPU& cpu, RAM& ram) {
@@ -254,7 +370,11 @@ void _ldy_imm(CPU& cpu, RAM& ram) {
     cpu.y    = value;
     cpu.update_status(value, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDY_IMM", value);
+    CPU::DebugData data;
+    data.instruction = "LDY_IMM";
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _ldy_zp(CPU& cpu, RAM& ram) {
@@ -263,7 +383,12 @@ void _ldy_zp(CPU& cpu, RAM& ram) {
     cpu.y      = value;
     cpu.update_status(value, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDY_ZP", address);
+    CPU::DebugData data;
+    data.instruction = "LDY_ZP";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _ldy_zpx(CPU& cpu, RAM& ram) {
@@ -272,169 +397,276 @@ void _ldy_zpx(CPU& cpu, RAM& ram) {
     cpu.y      = value;
     cpu.update_status(value, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDY_ZPX", address);
+    CPU::DebugData data;
+    data.instruction = "LDY_ZPX";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _ldy_abs(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram);
-    cpu.y       = cpu.read_byte(ram, address);
+    u8 value    = cpu.read_byte(ram, address);
+    cpu.y       = value;
     cpu.update_status(cpu.y, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDY_ABS", address);
+    CPU::DebugData data;
+    data.instruction = "LDY_ABS";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _ldy_absx(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram) + cpu.x;
-    cpu.y       = cpu.read_byte(ram, address);
+    u8 value    = cpu.read_byte(ram, address);
+    cpu.y       = value;
     cpu.update_status(cpu.y, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("LDY_ABSX", address);
+    CPU::DebugData data;
+    data.instruction = "LDY_ABSX";
+    data.address     = ram.most_recent_read;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _sec(CPU& cpu, RAM& ram) {
-    cpu.set_status(CPU::CARRY_FLAG);
+    cpu.set_status(CPU::CARRY_FLAG, true);
 
-    cpu.debug_print_instruction("SEC");
+    CPU::DebugData data;
+    data.instruction = "SEC";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _sed(CPU& cpu, RAM& ram) {
-    cpu.set_status(CPU::DECIMAL_FLAG);
+    cpu.set_status(CPU::DECIMAL_FLAG, true);
 
-    cpu.debug_print_instruction("SED");
+    CPU::DebugData data;
+    data.instruction = "SED";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _sei(CPU& cpu, RAM& ram) {
-    cpu.set_status(CPU::INTERRUPT_FLAG);
+    cpu.set_status(CPU::INTERRUPT_FLAG, true);
 
-    cpu.debug_print_instruction("SEI");
+    CPU::DebugData data;
+    data.instruction = "SEI";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _clc(CPU& cpu, RAM& ram) {
-    cpu.clear_status(CPU::CARRY_FLAG);
+    cpu.set_status(CPU::CARRY_FLAG, false);
 
-    cpu.debug_print_instruction("CLC");
+    CPU::DebugData data;
+    data.instruction = "CLC";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _cld(CPU& cpu, RAM& ram) {
-    cpu.clear_status(CPU::DECIMAL_FLAG);
+    cpu.set_status(CPU::DECIMAL_FLAG, false);
 
-    cpu.debug_print_instruction("CLD");
+    CPU::DebugData data;
+    data.instruction = "CLD";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _cli(CPU& cpu, RAM& ram) {
-    cpu.clear_status(CPU::INTERRUPT_FLAG);
+    cpu.set_status(CPU::INTERRUPT_FLAG, false);
 
-    cpu.debug_print_instruction("CLI");
+    CPU::DebugData data;
+    data.instruction = "CLI";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _clv(CPU& cpu, RAM& ram) {
-    cpu.clear_status(CPU::OVERFLOW_FLAG);
+    cpu.set_status(CPU::OVERFLOW_FLAG, false);
 
-    cpu.debug_print_instruction("CLV");
+    CPU::DebugData data;
+    data.instruction = "CLV";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _sta_zp(CPU& cpu, RAM& ram) {
     u8 address = cpu.next_byte(ram);
     cpu.write_byte(ram, address, cpu.a);
 
-    cpu.debug_print_instruction("STA_ZP", address);
+    CPU::DebugData data;
+    data.instruction = "STA_ZP";
+    data.address     = address;
+    data.value       = cpu.a;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _sta_zpx(CPU& cpu, RAM& ram) {
     u8 address = cpu.next_byte(ram) + cpu.x;
     cpu.write_byte(ram, address, cpu.a);
 
-    cpu.debug_print_instruction("STA_ZPX", address);
+    CPU::DebugData data;
+    data.instruction = "STA_ZPX";
+    data.address     = address;
+    data.value       = cpu.a;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _sta_abs(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram);
     cpu.write_byte(ram, address, cpu.a);
 
-    cpu.debug_print_instruction("STA_ABS", address);
+    CPU::DebugData data;
+    data.instruction = "STA_ABS";
+    data.address     = address;
+    data.value       = cpu.a;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _stx_zp(CPU& cpu, RAM& ram) {
     u8 address = cpu.next_byte(ram);
     cpu.write_byte(ram, address, cpu.x);
 
-    cpu.debug_print_instruction("STX_ZP", address);
+    CPU::DebugData data;
+    data.instruction = "STX_ZP";
+    data.address     = address;
+    data.value       = cpu.x;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _stx_zpy(CPU& cpu, RAM& ram) {
     u8 address = cpu.next_byte(ram) + cpu.y;
     cpu.write_byte(ram, address, cpu.x);
 
-    cpu.debug_print_instruction("STX_ZPY", address);
+    CPU::DebugData data;
+    data.instruction = "STX_ZPY";
+    data.address     = address;
+    data.value       = cpu.x;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _stx_abs(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram);
     cpu.write_byte(ram, address, cpu.x);
 
-    cpu.debug_print_instruction("STX_ABS", address);
+    CPU::DebugData data;
+    data.instruction = "STX_ABS";
+    data.address     = address;
+    data.value       = cpu.x;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _sty_zp(CPU& cpu, RAM& ram) {
     u8 address = cpu.next_byte(ram);
     cpu.write_byte(ram, address, cpu.y);
 
-    cpu.debug_print_instruction("STY_ZP", address);
+    CPU::DebugData data;
+    data.instruction = "STY_ZP";
+    data.address     = address;
+    data.value       = cpu.y;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _sty_zpx(CPU& cpu, RAM& ram) {
     u8 address = cpu.next_byte(ram) + cpu.x;
     cpu.write_byte(ram, address, cpu.y);
 
-    cpu.debug_print_instruction("STY_ZPX", address);
+    CPU::DebugData data;
+    data.instruction = "STY_ZPX";
+    data.address     = address;
+    data.value       = cpu.y;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _sty_abs(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram);
     cpu.write_byte(ram, address, cpu.y);
 
-    cpu.debug_print_instruction("STY_ABS", address);
+    CPU::DebugData data;
+    data.instruction = "STY_ABS";
+    data.address     = address;
+    data.value       = cpu.y;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _tax(CPU& cpu, RAM& ram) {
     cpu.x = cpu.a;
     cpu.update_status(cpu.x, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("TAX", cpu.a);
+    CPU::DebugData data;
+    data.instruction = "TAX";
+    data.value       = cpu.a;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _tay(CPU& cpu, RAM& ram) {
     cpu.y = cpu.a;
     cpu.update_status(cpu.y, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("TAY", cpu.a);
+    CPU::DebugData data;
+    data.instruction = "TAY";
+    data.value       = cpu.a;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _tsx(CPU& cpu, RAM& ram) {
     cpu.x = cpu.sp;
     cpu.update_status(cpu.x, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("TSX", cpu.sp);
+    CPU::DebugData data;
+    data.instruction = "TSX";
+    data.value       = cpu.sp;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _txa(CPU& cpu, RAM& ram) {
     cpu.a = cpu.x;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("TXA", cpu.x);
+    CPU::DebugData data;
+    data.instruction = "TXA";
+    data.value       = cpu.x;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _txs(CPU& cpu, RAM& ram) {
     cpu.sp = cpu.x;
 
-    cpu.debug_print_instruction("TXS", cpu.x);
+    CPU::DebugData data;
+    data.instruction = "TXS";
+    data.value       = cpu.x;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _tya(CPU& cpu, RAM& ram) {
     cpu.a = cpu.y;
     cpu.update_status(cpu.a, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("TXA", cpu.y);
+    CPU::DebugData data;
+    data.instruction = "TYA";
+    data.value       = cpu.y;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _dec_zp(CPU& cpu, RAM& ram) {
@@ -443,7 +675,12 @@ void _dec_zp(CPU& cpu, RAM& ram) {
     cpu.write_byte(ram, address, value - 1);
     cpu.update_status(value - 1, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("DEC_ZP", address);
+    CPU::DebugData data;
+    data.instruction = "DEC_ZP";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _dec_zpx(CPU& cpu, RAM& ram) {
@@ -452,7 +689,12 @@ void _dec_zpx(CPU& cpu, RAM& ram) {
     cpu.write_byte(ram, address, value - 1);
     cpu.update_status(value - 1, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("DEC_ZPX", address);
+    CPU::DebugData data;
+    data.instruction = "DEC_ZPX";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _dec_abs(CPU& cpu, RAM& ram) {
@@ -461,7 +703,12 @@ void _dec_abs(CPU& cpu, RAM& ram) {
     cpu.write_byte(ram, address, value - 1);
     cpu.update_status(value - 1, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("DEC_ABS", address);
+    CPU::DebugData data;
+    data.instruction = "DEC_ABS";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _dec_absx(CPU& cpu, RAM& ram) {
@@ -470,21 +717,32 @@ void _dec_absx(CPU& cpu, RAM& ram) {
     cpu.write_byte(ram, address, value - 1);
     cpu.update_status(value - 1, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("DEC_ABSX", address);
+    CPU::DebugData data;
+    data.instruction = "DEC_ABSX";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _dex(CPU& cpu, RAM& ram) {
     cpu.x--;
     cpu.update_status(cpu.x, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("DEX");
+    CPU::DebugData data;
+    data.instruction = "DEX";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _dey(CPU& cpu, RAM& ram) {
     cpu.y--;
     cpu.update_status(cpu.y, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("DEY");
+    CPU::DebugData data;
+    data.instruction = "DEY";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _inc_zp(CPU& cpu, RAM& ram) {
@@ -493,7 +751,12 @@ void _inc_zp(CPU& cpu, RAM& ram) {
     cpu.write_byte(ram, address, value + 1);
     cpu.update_status(value + 1, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("INC_ZP", address);
+    CPU::DebugData data;
+    data.instruction = "INC_ZP";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _inc_zpx(CPU& cpu, RAM& ram) {
@@ -502,7 +765,12 @@ void _inc_zpx(CPU& cpu, RAM& ram) {
     cpu.write_byte(ram, address, value + 1);
     cpu.update_status(value + 1, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("INC_ZPX", address);
+    CPU::DebugData data;
+    data.instruction = "INC_ZPX";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _inc_abs(CPU& cpu, RAM& ram) {
@@ -511,7 +779,12 @@ void _inc_abs(CPU& cpu, RAM& ram) {
     cpu.write_byte(ram, address, value + 1);
     cpu.update_status(value + 1, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("INC_ABS", address);
+    CPU::DebugData data;
+    data.instruction = "INC_ABS";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _inc_absx(CPU& cpu, RAM& ram) {
@@ -520,28 +793,43 @@ void _inc_absx(CPU& cpu, RAM& ram) {
     cpu.write_byte(ram, address, value + 1);
     cpu.update_status(value + 1, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("INC_ABSX", address);
+    CPU::DebugData data;
+    data.instruction = "INC_ABSX";
+    data.address     = address;
+    data.value       = value;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _inx(CPU& cpu, RAM& ram) {
     cpu.x++;
     cpu.update_status(cpu.x, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("INX");
+    CPU::DebugData data;
+    data.instruction = "INX";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _iny(CPU& cpu, RAM& ram) {
     cpu.y++;
     cpu.update_status(cpu.y, CPU::ZERO_FLAG | CPU::NEGATIVE_FLAG);
 
-    cpu.debug_print_instruction("INY");
+    CPU::DebugData data;
+    data.instruction = "INY";
+
+    cpu.debug_print_instruction(data);
 }
 
 void _jmp_abs(CPU& cpu, RAM& ram) {
     u16 address = cpu.next_word(ram);
     cpu.pc      = address;
 
-    cpu.debug_print_instruction("JMP", address);
+    CPU::DebugData data;
+    data.instruction = "JMP_ABS";
+    data.address     = address;
+
+    cpu.debug_print_instruction(data);
 }
 
 void _jmp_ind(CPU& cpu, RAM& ram) {
@@ -550,7 +838,11 @@ void _jmp_ind(CPU& cpu, RAM& ram) {
     u16 indirect_address = cpu.next_word(ram);
     cpu.pc               = indirect_address;
 
-    cpu.debug_print_instruction("JMP_IND", address);
+    CPU::DebugData data;
+    data.instruction = "JMP_IND";
+    data.address     = address;
+
+    cpu.debug_print_instruction(data);
 }
 
 void load_instructions(CPU& cpu) {
@@ -558,18 +850,15 @@ void load_instructions(CPU& cpu) {
         cpu.instructions[i] = _unsupported;
     }
 
-    cpu.instructions[NOP] = _nop;
-
-    cpu.instructions[AND_IMM] = _and_imm;
-
+    cpu.instructions[NOP]      = _nop;
+    cpu.instructions[ADC_ABS]  = _adc_abs;
+    cpu.instructions[AND_IMM]  = _and_imm;
     cpu.instructions[AND_ZP]   = _and_zp;
     cpu.instructions[AND_ZPX]  = _and_zpx;
     cpu.instructions[AND_ABS]  = _and_abs;
     cpu.instructions[AND_ABSX] = _and_absx;
     cpu.instructions[AND_ABSY] = _and_absy;
-
-    cpu.instructions[LDA_IMM] = _lda_imm;
-
+    cpu.instructions[LDA_IMM]  = _lda_imm;
     cpu.instructions[LDA_ZP]   = _lda_zp;
     cpu.instructions[LDA_ZPX]  = _lda_zpx;
     cpu.instructions[LDA_ABS]  = _lda_abs;
