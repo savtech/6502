@@ -1,27 +1,14 @@
-#include <stdio.h>
 #include "cpu.h"
-#include "ram.h"
 #include "instructions.h"
+#include "ram.h"
+#include <stdio.h>
 
-void mock_data(CPU& cpu, RAM& ram)
-{
-    ram.write(0x0000, LDA_IMM);
-    ram.write(0x0001, 0x40);
-    ram.write(0x0002, STA_ABS);
-    ram.write(0x0003, 0xBB);
-    ram.write(0x0004, 0xAA);
-    ram.write(0x0005, NOP);
-}
+int main() {
+    u8 data     = 0xFF;
+    s8 new_data = static_cast<s8>(data);
 
-int main()
-{
-    CPU cpu = {.debug = true};
-    RAM ram = {};
-
-    load_instructions(cpu);
-    mock_data(cpu, ram);
-
-    cpu.execute_instructions(ram, 3);
+    printf("Data: %c%c%c%c%c%c%c%c (%i)\n", BYTE_TO_BINARY(data), data);
+    printf("New Data: %c%c%c%c%c%c%c%c (%i)", BYTE_TO_BINARY(new_data), new_data);
 
     return 0;
 }

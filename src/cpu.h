@@ -38,7 +38,13 @@ struct CPU {
     void clear_status(const u8 flags);
     void update_status(const u8 address, const u8 flags);
 
-    void debug_print_instruction(const char* instruction_name, const u16 data = 0x0000) const;
+    struct DebugData {
+        const char* instruction = "NULL";
+        u16 address             = 0x0000;
+        u8 value                = 0x00;
+    };
+
+    void debug_print_instruction(const DebugData& data = {}) const;
 };
 
 void CPU::execute(RAM& ram) {
@@ -69,9 +75,7 @@ u16 CPU::next_word(RAM& ram) {
     u8 lsb = next_byte(ram);
     u8 msb = next_byte(ram);
 
-    u16 data = ((msb << 8) | lsb); // The 6502 is little endian
-
-    return data;
+    return ((msb << 8) | lsb); // The 6502 is little endian
 }
 
 void CPU::write_byte(RAM& ram, const u16 address, const u8 data) const {
@@ -104,15 +108,15 @@ void CPU::update_status(const u8 address, const u8 flags) {
     }
 }
 
-void CPU::debug_print_instruction(const char* instruction_name, u16 data) const {
+void CPU::debug_print_instruction(const DebugData& data) const {
     if(!debug) return;
 
     printf(
         "[%-*s] 0x%4.4x (%5i) |||||||||| REGISTERS: [PC] 0x%4.4x [SP] 0x%2.2x [A] 0x%2.2x (%3i) | [X] 0x%2.2x (%3i) | [Y] 0x%2.2x (%3i) |||||||||||| FLAGS: [N] %c [V] %c [~] %c [B] %c [D] %c [I] %c [Z] %c [C] %c\n",
         8,
-        instruction_name,
-        data,
-        data,
+        data.instruction,
+        data.address,
+        data.value,
         pc,
         sp,
         a,
