@@ -44,12 +44,12 @@ UTEST_F(HardwareFunctionality, Next_Byte) {
 UTEST_F(HardwareFunctionality, Next_Word) {
     utest_fixture->cpu.reset();
 
-    utest_fixture->ram.write(0x0000, 0xFF);
-    utest_fixture->ram.write(0x0001, 0xFF);
+    utest_fixture->ram.write(0x0000, 0xBB);
+    utest_fixture->ram.write(0x0001, 0xAA);
 
     u16 data = utest_fixture->cpu.next_word(utest_fixture->ram);
 
-    ASSERT_EQ_MSG(data, 0xFFFF, "The two bytes read from memory should equate to 0xFFFF as an u16.");
+    ASSERT_EQ_MSG(data, 0xAABB, "The two bytes read from memory should equate to 0xAABB as an u16.");
 }
 
 UTEST_F(Instructions, NOP) {
@@ -60,6 +60,22 @@ UTEST_F(Instructions, NOP) {
     utest_fixture->cpu.execute_instructions(utest_fixture->ram);
 
     ASSERT_EQ_MSG(0x0001, utest_fixture->cpu.pc, "The program counter should be incremented by 1.");
+}
+
+UTEST_F(Instructions, ADC_ABS_ZeroCase) {
+    static constexpr size_t instruction_count = 1;
+
+    utest_fixture->cpu.reset();
+    utest_fixture->cpu.debug = true;
+    utest_fixture->ram.write(0x8000, 0x02);
+
+    utest_fixture->ram.write(0x0000, ADC_ABS);
+    utest_fixture->ram.write(0x0001, 0x00);
+    utest_fixture->ram.write(0x0002, 0x80);
+
+    utest_fixture->cpu.execute_instructions(utest_fixture->ram, instruction_count);
+
+    ASSERT_EQ_MSG(0x01, utest_fixture->cpu.a, "The A register's value should be 0x01 (1).");
 }
 
 UTEST_F(Instructions, AND_Immediate_ZeroCase) {
